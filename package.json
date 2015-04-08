@@ -1,0 +1,33 @@
+{
+  "name": "typescript-definition-parser",
+  "version": "0.1.0",
+  "description": "Simple parser for TypeScript definition files.",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodeunit test.js",
+    "make": "jison typescript_definition.jison && tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sedwards2009/typescript-definition-parser.git"
+  },
+  "keywords": [
+    "typescript",
+    "parser",
+    "definitions"
+  ],
+  "author": "Simon Edwards",
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/sedwards2009/typescript-definition-parser/issues"
+  },
+  "homepage": "https://github.com/sedwards2009/typescript-definition-parser",
+  "dependencies": {
+    "jison": "^0.4.15"
+  },
+  "devDependencies": {
+    "nodeunit": "^0.9.1",
+    "tsd": "^0.5.7",
+    "typescript": "^1.5.0-alpha"
+  }
+}
