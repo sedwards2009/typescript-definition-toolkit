@@ -46,3 +46,17 @@ export function testExport(test: nodeunit.Test): void {
   roundTrip(test, `export = Foobar;
 `);
 }
+
+export function testAmbientModule(test: nodeunit.Test): void {
+  roundTrip(test, `module "FooBarMod" {
+    
+  }
+`);
+}
+
+export function testAmbientModule2(test: nodeunit.Test): void {
+  roundTrip(test, `module 'FooBarMod' {
+    
+  }
+`);
+}

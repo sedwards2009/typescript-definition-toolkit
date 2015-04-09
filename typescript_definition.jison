@@ -2,6 +2,9 @@
 
 /* lexical grammar */
 %lex
+
+StringLiteral (\"[^\"]*\")|(\'[^\']*\')
+
 %%
 \s+                               { /* return 'WhiteSpace'; */ }
 "//"[^\x0d\x0a]*[\x0d\x0a]        { return 'SingleLineComment'; }
@@ -9,8 +12,12 @@
 <<EOF>>                           { return 'EOF'; }
 "export"                          { return 'EXPORT'; }
 "="                               { return 'EQUALS'; }
-[$_a-zA-Z][$_a-zA-Z0-9]*          { return 'Identifier'; }
 ";"                               { return 'SEMI'; }
+"module"                          { return 'MODULE'; }
+{StringLiteral}                   { yytext = yytext.slice(1,-1); return 'String'; }
+"{"                               { return 'LBRACE'; }
+"}"                               { return 'RBRACE'; }
+[$_a-zA-Z][$_a-zA-Z0-9]*          { return 'Identifier'; }
 
 /lex
 
@@ -42,6 +49,8 @@ declaration_element
         { $$ = $1;}
     | export_assignment
         { $$ = $1;}
+    | ambient_external_module_declaration
+        { $$ = $1;}    
     ;
 
 comment
@@ -54,4 +63,34 @@ comment
 export_assignment
     : EXPORT EQUALS Identifier SEMI
         { $$ = {type: 'Export', value: $3}; }
+    ;
+
+ambient_external_module_declaration
+    : MODULE String LBRACE ambient_external_module_body RBRACE
+        { $$ = {type: "", name: $2, value: $4 }; }
+    | MODULE String LBRACE RBRACE
+        { $$ = {type: "", name: $2, value: [] }; }
+    ;
+
+ambient_external_module_body
+    : ambient_external_module_elements
+        { $$ = $1; }
+    ;
+
+ambient_external_module_elements
+    : ambient_external_module_element
+        { $$ = [$1]; }
+    | ambient_external_module_elements ambient_external_module_element
+        { $1.push($2); $$ = $1; }
+    ;
+
+ambient_external_module_element
+    : ambient_module_element
+        { $$ = $1; }
+    | export_assignment
+        { $$ = $1; }
+    | EXPORT external_import_declaration
+        { $$ = $2; }
+    | external_import_declaration
+        { $$ = $1; }
     ;
