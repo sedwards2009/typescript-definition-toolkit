@@ -41,3 +41,8 @@ export function testMultiComment(test: nodeunit.Test): void {
 */
 `);
 }
+
+export function testExport(test: nodeunit.Test): void {
+  roundTrip(test, `export = Foobar;
+`);
+}

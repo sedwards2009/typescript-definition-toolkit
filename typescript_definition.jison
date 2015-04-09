@@ -7,6 +7,10 @@
 "//"[^\x0d\x0a]*[\x0d\x0a]        { return 'SingleLineComment'; }
 "/*"(.|[\x0d\x0a])*?"*/"          { return 'MultiLineComment'; }
 <<EOF>>                           { return 'EOF'; }
+"export"                          { return 'EXPORT'; }
+"="                               { return 'EQUALS'; }
+[$_a-zA-Z][$_a-zA-Z0-9]*          { return 'Identifier'; }
+";"                               { return 'SEMI'; }
 
 /lex
 
@@ -36,6 +40,8 @@ declaration_elements
 declaration_element
     : comment
         { $$ = $1;}
+    | export_assignment
+        { $$ = $1;}
     ;
 
 comment
@@ -43,4 +49,9 @@ comment
         { $$ = {type: 'SingleLineComment', value: $1}; }
     | MultiLineComment
         { $$ = {type: 'MultiLineComment', value: $1}; }
+    ;
+
+export_assignment
+    : EXPORT EQUALS Identifier SEMI
+        { $$ = {type: 'Export', value: $3}; }
     ;
