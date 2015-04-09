@@ -60,3 +60,17 @@ export function testAmbientModule2(test: nodeunit.Test): void {
   }
 `);
 }
+
+export function testImport(test: nodeunit.Test): void {
+  roundTrip(test, `module 'FooBarMod' {
+    import otherModule = require('otherModule');
+  }
+`);
+}
+
+export function testExportImport(test: nodeunit.Test): void {
+  roundTrip(test, `module 'FooBarMod' {
+    export import otherModule = require('otherModule');
+  }
+`);
+}

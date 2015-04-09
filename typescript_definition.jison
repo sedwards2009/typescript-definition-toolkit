@@ -10,7 +10,11 @@ StringLiteral (\"[^\"]*\")|(\'[^\']*\')
 "//"[^\x0d\x0a]*[\x0d\x0a]        { return 'SingleLineComment'; }
 "/*"(.|[\x0d\x0a])*?"*/"          { return 'MultiLineComment'; }
 <<EOF>>                           { return 'EOF'; }
+"import"                          {return 'IMPORT'; }
 "export"                          { return 'EXPORT'; }
+"require"                         { return 'REQUIRE'; }
+"("                               { return 'LBRACKET'; }
+")"                               { return 'RBRACKET'; }
 "="                               { return 'EQUALS'; }
 ";"                               { return 'SEMI'; }
 "module"                          { return 'MODULE'; }
@@ -67,9 +71,9 @@ export_assignment
 
 ambient_external_module_declaration
     : MODULE String LBRACE ambient_external_module_body RBRACE
-        { $$ = {type: "", name: $2, value: $4 }; }
+        { $$ = {type: "Module", name: $2, value: $4 }; }
     | MODULE String LBRACE RBRACE
-        { $$ = {type: "", name: $2, value: [] }; }
+        { $$ = {type: "Module", name: $2, value: [] }; }
     ;
 
 ambient_external_module_body
@@ -90,7 +94,17 @@ ambient_external_module_element
     | export_assignment
         { $$ = $1; }
     | EXPORT external_import_declaration
-        { $$ = $2; }
+        { $$ = { type: "ExportImport", name: $2.name, module: $2.module}; }
     | external_import_declaration
         { $$ = $1; }
+    ;
+
+external_import_declaration
+    : IMPORT Identifier EQUALS external_module_reference SEMI
+        { $$ = {type: "Import", name: $2, module: $4 }; }
+    ;
+
+external_module_reference
+    : REQUIRE LBRACKET String RBRACKET
+        { $$ = $3; }
     ;
