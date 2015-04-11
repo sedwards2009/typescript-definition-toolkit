@@ -11,7 +11,7 @@ StringLiteral (\"[^\"]*\")|(\'[^\']*\')
 "/*"(.|[\x0d\x0a])*?"*/"          { return 'MultiLineComment'; }
 [0-9]+                            { return 'Numeric'; }
 <<EOF>>                           { return 'EOF'; }
-"import"                          {return 'IMPORT'; }
+"import"                          { return 'IMPORT'; }
 "export"                          { return 'EXPORT'; }
 "require"                         { return 'REQUIRE'; }
 "any"                             { return 'ANY'; }
@@ -263,6 +263,8 @@ type_reference
         { $$ = $1; }
     ;
 
+/* ********************************************* */
+/*
 type_name
     : Identifier
         { $$ = $1; }
@@ -276,6 +278,15 @@ module_name
     | module_name DOT Identifier
         { $$ = $1 + "." + $3; }
     ;
+*/
+
+type_name
+    : Identifier
+        { $$ = $1; }
+    | type_name DOT Identifier
+        { $$ = $1 + "." + $3; }
+    ;
+/* ********************************************* */
 
 object_type
     : LBRACE type_body RBRACE
@@ -341,24 +352,24 @@ union_type
 function_type
     : type_parameters LBRACKET parameter_list RBRACKET ARROW type
       { $$ = $1 + "(" + $3 + ") => " + $6; }
-    | tLBRACKET parameter_list RBRACKET ARROW type
+    | LBRACKET parameter_list RBRACKET ARROW type
       { $$ = "(" + $2 + ") => " + $5; }
-    | type_parameters LBRACKET parameter_list RBRACKET ARROW type
-      { $$ = $1 + "(" + $3 + ") => " + $6; }
-    | type_parameters LBRACKET parameter_list RBRACKET ARROW type
-      { $$ = $1 + "(" + $3 + ") => " + $6; }
+    | type_parameters LBRACKET RBRACKET ARROW type
+      { $$ = $1 + "() => " + $5; }
+    | LBRACKET RBRACKET ARROW type
+      { $$ = "() => " + $4; }
     ;  
 
 constructor_type
-    : type_parameters LBRACKET parameter_list RBRACKET ARROW type
-      { $$ = "new " + $1 + "(" + $3 + ") => " + $6; }
-    | LBRACKET parameter_list RBRACKET ARROW type
-      { $$ = "new(" + $2 + ") => " + $5; }
-    | type_parameters LBRACKET parameter_list RBRACKET ARROW type
-      { $$ = "new " + $1 + "(" + $3 + ") => " + $6; }
-    | type_parameters LBRACKET parameter_list RBRACKET ARROW type
-      { $$ = "new " + $1 + "(" + $3 + ") => " + $6; }
-    ;  
+    : NEW type_parameters LBRACKET parameter_list RBRACKET ARROW type
+      { $$ = "new " + $2 + "(" + $4 + ") => " + $7; }
+    | NEW LBRACKET parameter_list RBRACKET ARROW type
+      { $$ = "new(" + $3 + ") => " + $6; }
+    | NEW type_parameters LBRACKET RBRACKET ARROW type
+      { $$ = "new " + $2 + "() => " + $6; }
+    | NEW LBRACKET RBRACKET ARROW type
+      { $$ = "new () => " + $5; }
+    ;
 
 type_query
     : TYPEOF type_query_expression
