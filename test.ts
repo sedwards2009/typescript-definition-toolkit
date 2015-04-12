@@ -74,3 +74,56 @@ export function testExportImport(test: nodeunit.Test): void {
   }
 `);
 }
+
+export function testInterfaceMethod(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      bop();
+    }
+`);
+}
+
+export function testInterfaceMethod2(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      bop();
+      pop();
+    }
+`);
+}
+
+export function testInterfaceMethod2Args(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      bop(times, message);
+    }
+`);
+}
+
+export function testInterfaceMethod3(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      bop(times: number): void;
+    }
+`);
+}
+
+export function testInterfaceMethod4(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      bop(times?: number): void;
+    }
+`);
+}
+
+export function testInterfaceMethod5(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      bop(...times: number[]): void;
+    }
+`);
+}
+
+// export function testFunction(test: nodeunit.Test): void {
+//   roundTrip(test, `function bop(times: number): void;`);
+// }

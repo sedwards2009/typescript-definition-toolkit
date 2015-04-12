@@ -34,6 +34,7 @@ IdentifierRegexp ([$_a-zA-Z][$_a-zA-Z0-9]*)
 ")"                               { this.popState(); return 'RBRACKET'; }
 "=>"                              { return 'ARROW'; }
 "="                               { return 'EQUALS'; }
+":"                               { return 'COLON'; }
 ";"                               { return 'SEMI'; }
 ","                               { return 'COMMA'; }
 "."                               { return 'DOT'; }
@@ -322,7 +323,7 @@ type_member
         { $$ = $1; }
     | index_signature
         { $$ = $1; }
-    | methods_signature
+    | method_signature
         { $$ = $1; }
     ;
 
@@ -406,11 +407,11 @@ property_name
 
 call_signature
     : type_parameters LBRACKET parameter_list RBRACKET type_annotation
-        { $$ = $1 + "(" + $3 + ")" + $5; }
+        { $$ = $1 + "(" + $3 + "): " + $5; }
     | LBRACKET parameter_list RBRACKET type_annotation
-        { $$ = "(" + $2 + ")" + $4; }
+        { $$ = "(" + $2 + "): " + $4; }
     | type_parameters LBRACKET RBRACKET type_annotation
-        { $$ = $1 + "()" + $4; }
+        { $$ = $1 + "(): " + $4; }
     | LBRACKET RBRACKET type_annotation
         { $$ = "()" + $3; }
     | type_parameters LBRACKET parameter_list RBRACKET
@@ -448,15 +449,15 @@ required_parameter_list
     ;
 
 required_parameter
-    : accessibility_modifier Identifier type_annotation
+    : accessibility_modifier IdentifierInBrackets type_annotation
         { $$ = $1 + " " + $2 + ": " + $3; }
     | IdentifierInBrackets type_annotation
         { $$ = $1 + ": " + $2; }
-    | accessibility_modifier Identifier
+    | accessibility_modifier IdentifierInBrackets
         { $$ = $1 + " " + $2; }
     | IdentifierInBrackets
         { $$ = $1; }
-    | IdentifierInBrackets COLON String
+    | IdentifierInBrackets COLON String 
         { $$ = $1 + ": " + $3; }
     ;
 
@@ -477,30 +478,30 @@ optional_parameter_list
     ;
 
 optional_parameter
-    : accessibility_modifier Identifier QUESTIONMARK type_annotation
-        { $$ = $1 + " " + $2 + "?:" + $4; }
-    | Identifier QUESTIONMARK type_annotation
-        { $$ = $1 + "?:" + $3; }    
-    | accessibility_modifier Identifier QUESTIONMARK
+    : accessibility_modifier IdentifierInBrackets QUESTIONMARK type_annotation
+        { $$ = $1 + " " + $2 + "?: " + $4; }
+    | IdentifierInBrackets QUESTIONMARK type_annotation
+        { $$ = $1 + "?: " + $3; }    
+    | accessibility_modifier IdentifierInBrackets QUESTIONMARK
         { $$ = $1 + " " + $2 + "?"; }    
-    | Identifier QUESTIONMARK
+    | IdentifierInBrackets QUESTIONMARK
         { $$ = $1 + "?"; }
-    | accessibility_modifier Identifier type_annotation initialiser
+    | accessibility_modifier IdentifierInBrackets type_annotation initialiser
         { $$ = $1 + " " + $2 + ":" + $3 + "=" + $4; }   
-    | Identifier type_annotation initialiser
-        { $$ = $1 + ":" + $2 + "=" + $3; }
-    | accessibility_modifier Identifier initialiser
+    | IdentifierInBrackets type_annotation initialiser
+        { $$ = $1 + ": " + $2 + "=" + $3; }
+    | accessibility_modifier IdentifierInBrackets initialiser
         { $$ = $1 + " " + $2 + "=" + $3; }       
-    | Identifier initialiser
+    | IdentifierInBrackets initialiser
         { $$ = $1 + "=" + $2; }
-    | Identifier QUESTIONMARK COLON String
-       { $$ = $1 + "?:" + $4; }
+    | IdentifierInBrackets QUESTIONMARK COLON String
+       { $$ = $1 + "?: " + $4; }
     ;
 
 rest_parameter
-    : ELLIPSIS Identifier type_annotation
-       { $$ = "..." + $2 + $3; }
-    | ELLIPSIS Identifier
+    : ELLIPSIS IdentifierInBrackets type_annotation
+       { $$ = "..." + $2 + ": " + $3; }
+    | ELLIPSIS IdentifierInBrackets
        { $$ = "..." + $2; }
     ;
 
@@ -540,4 +541,8 @@ method_signature
 type_alias_declaration
     : TYPE Identifier EQUALS type SEMI
       { $$ = "type " + $2 + "=" + $4 + ";"; }
+    ;
+type_annotation
+    : COLON type
+      { $$ = $2; }
     ;
