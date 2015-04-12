@@ -507,28 +507,28 @@ rest_parameter
 
 construct_signature
      : NEW type_parameters LBRACKET parameter_list RBRACKET type_annotation
-       { $$ = "new " + $1 + "(" + $4 + ")" + $6;}
+       { $$ = "new" + $1 + "(" + $4 + ")" + $6;}
      | NEW type_parameters LBRACKET  RBRACKET type_annotation
-       { $$ = "new " + $1 + "()" + $5;}
+       { $$ = "new" + $1 + "()" + $5;}
      | NEW type_parameters LBRACKET parameter_list RBRACKET
-       { $$ = "new " + $1 + "(" + $4 + ")";}
+       { $$ = "new" + $1 + "(" + $4 + ")";}
      | NEW type_parameters LBRACKET RBRACKET 
-       { $$ = "new " + $1 + "()";}
+       { $$ = "new" + $1 + "()";}
      | NEW LBRACKET parameter_list RBRACKET type_annotation
-       { $$ = "new (" + $3 + ")" + $5;}
+       { $$ = "new(" + $3 + ")" + $5;}
      | NEW LBRACKET  RBRACKET type_annotation
-       { $$ = "new ()" + $4;}  
+       { $$ = "new()" + $4;}  
      | NEW LBRACKET parameter_list RBRACKET
-       { $$ = "new (" + $3 + ")";}
+       { $$ = "new(" + $3 + ")";}
      | NEW LBRACKET RBRACKET 
-       { $$ = "new ()";}
+       { $$ = "new()";}
      ;
 
 index_signature
     : LSQUARE Identifier COLON STRING RSQUARE type_annotation
-        { $$ = "[" + $2 + ": string]" + $6;}
+        { $$ = "[" + $2 + ": string]: " + $6;}
     | LSQUARE Identifier COLON NUMBER RSQUARE type_annotation
-        { $$ = "[" + $2 + ": number]" + $6;}
+        { $$ = "[" + $2 + ": number]: " + $6;}
     ;
 
 method_signature

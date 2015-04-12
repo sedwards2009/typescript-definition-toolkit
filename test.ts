@@ -124,6 +124,86 @@ export function testInterfaceMethod5(test: nodeunit.Test): void {
 `);
 }
 
+export function testInterfaceNew(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      new();
+    }
+`);
+}
+
+export function testInterfaceNew2(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      new(baz);
+    }
+`);
+}
+
+export function testInterfaceNew3(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      new(baz?);
+    }
+`);
+}
+
+export function testInterfaceNew4(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      new(baz?: number);
+    }
+`);
+}
+
+export function testInterfaceDefault(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      ();
+    }
+`);
+}
+
+export function testInterfaceDefault2(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      (baz);
+    }
+`);
+}
+
+export function testInterfaceDefault3(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      (baz?);
+    }
+`);
+}
+
+export function testInterfaceDefault4(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      (baz?: number);
+    }
+`);
+}
+
+export function testInterfaceIndex(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      [i: number]: string;
+    }
+`);
+}
+
+export function testInterfaceIndex2(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      [i: string]: string;
+    }
+`);
+}
+
 // export function testFunction(test: nodeunit.Test): void {
 //   roundTrip(test, `function bop(times: number): void;`);
 // }
