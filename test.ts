@@ -75,6 +75,13 @@ export function testExportImport(test: nodeunit.Test): void {
 `);
 }
 
+export function testInterface(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz extends smeg.Foo{
+    }
+`);
+}
+
 export function testInterfaceMethod(test: nodeunit.Test): void {
   roundTrip(test, `
     export interface Baz {
@@ -202,6 +209,10 @@ export function testInterfaceIndex2(test: nodeunit.Test): void {
       [i: string]: string;
     }
 `);
+}
+
+export function testTypeAlias(test: nodeunit.Test): void {
+  roundTrip(test, `type foo = bar;`);
 }
 
 // export function testFunction(test: nodeunit.Test): void {

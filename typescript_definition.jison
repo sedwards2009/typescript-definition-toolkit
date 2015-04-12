@@ -23,6 +23,7 @@ IdentifierRegexp ([$_a-zA-Z][$_a-zA-Z0-9]*)
 "string"                          { return 'STRING'; }
 "void"                            { return 'VOID'; }
 "new"                             { return 'NEW'; }
+"type"                            { return 'TYPE'; }
 "public"                          { return 'PUBLIC'; }
 "private"                         { return 'PRIVATE'; }
 "protected"                       { return 'PROTECTED'; }
@@ -47,7 +48,7 @@ IdentifierRegexp ([$_a-zA-Z][$_a-zA-Z0-9]*)
 "|"                               { return 'PIPE'; }
 "["                               { return 'LSQUARE'; }
 "]"                               { return 'RSQUARE'; }
-<brackets>{IdentifierRegexp} { return 'IdentifierInBrackets'; }
+<brackets>{IdentifierRegexp}      { return 'IdentifierInBrackets'; }
 {IdentifierRegexp}                { return 'Identifier'; }
 
 /lex
@@ -85,6 +86,22 @@ declaration_element
     | interface_declaration
         { $$ = $1;}
     | EXPORT interface_declaration
+        { $2.export = true; $$ = $2;}
+    | type_alias_declaration
+        { $$ = $1;}
+    | EXPORT type_alias_declaration
+        { $2.export = true; $$ = $2;}
+    | import_declaration  /* FIXME */
+        { $$ = $1;}
+    | EXPORT import_declaration  /* FIXME */
+        { $2.export = true; $$ = $2;}
+    | ambient_declaration  /* FIXME */
+        { $$ = $1;}
+    | EXPORT ambient_declaration  /* FIXME */
+        { $2.export = true; $$ = $2;}
+    | external_import_declaration /* FIXME */
+        { $$ = $1;}
+    | EXPORT external_import_declaration /* FIXME */
         { $2.export = true; $$ = $2;}
     ;
 
