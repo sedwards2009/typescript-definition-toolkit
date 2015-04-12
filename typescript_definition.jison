@@ -4,6 +4,9 @@
 %lex
 
 StringLiteral (\"[^\"]*\")|(\'[^\']*\')
+IdentifierRegexp ([$_a-zA-Z][$_a-zA-Z0-9]*)
+
+%s brackets
 
 %%
 \s+                               { /* return 'WhiteSpace'; */ }
@@ -27,8 +30,8 @@ StringLiteral (\"[^\"]*\")|(\'[^\']*\')
 "?"                               { return 'QUESTIONMARK'; }
 "<"                               { return 'LANGLE'; }
 ">"                               { return 'RANGLE'; }
-"("                               { return 'LBRACKET'; }
-")"                               { return 'RBRACKET'; }
+"("                               { this.begin('brackets'); return 'LBRACKET'; }
+")"                               { this.popState(); return 'RBRACKET'; }
 "=>"                              { return 'ARROW'; }
 "="                               { return 'EQUALS'; }
 ";"                               { return 'SEMI'; }
@@ -38,12 +41,13 @@ StringLiteral (\"[^\"]*\")|(\'[^\']*\')
 "interface"                       { return 'INTERFACE'; }
 "extends"                         { return 'EXTENDS'; }
 {StringLiteral}                   { yytext = yytext.slice(1,-1); return 'String'; }
-"{"                               { return 'LBRACE'; }
-"}"                               { return 'RBRACE'; }
+"{"                               { this.begin('INITIAL'); return 'LBRACE'; }
+"}"                               { this.popState(); return 'RBRACE'; }
 "|"                               { return 'PIPE'; }
 "["                               { return 'LSQUARE'; }
 "]"                               { return 'RSQUARE'; }
-[$_a-zA-Z][$_a-zA-Z0-9]*          { return 'Identifier'; }
+<brackets>{IdentifierRegexp} { return 'IdentifierInBrackets'; }
+{IdentifierRegexp}                { return 'Identifier'; }
 
 /lex
 
@@ -446,13 +450,13 @@ required_parameter_list
 required_parameter
     : accessibility_modifier Identifier type_annotation
         { $$ = $1 + " " + $2 + ": " + $3; }
-    | Identifier type_annotation
+    | IdentifierInBrackets type_annotation
         { $$ = $1 + ": " + $2; }
     | accessibility_modifier Identifier
         { $$ = $1 + " " + $2; }
-    | Identifier
+    | IdentifierInBrackets
         { $$ = $1; }
-    | Identifier COLON String
+    | IdentifierInBrackets COLON String
         { $$ = $1 + ": " + $3; }
     ;
 
