@@ -91,9 +91,9 @@ declaration_element
         { $$ = $1;}
     | EXPORT type_alias_declaration
         { $2.export = true; $$ = $2;}
-    | import_declaration  /* FIXME */
+    | import_declaration
         { $$ = $1;}
-    | EXPORT import_declaration  /* FIXME */
+    | EXPORT import_declaration
         { $2.export = true; $$ = $2;}
     | ambient_declaration  /* FIXME */
         { $$ = $1;}
@@ -563,3 +563,17 @@ type_annotation
     : COLON type
       { $$ = $2; }
     ;
+    
+import_declaration
+    : IMPORT Identifier EQUALS type_name SEMI /* type_name has the same structure as entity_name here. */
+      { $$= "import " + $2 + " = " + $4 +";"; }
+    ;
+    
+/*
+entity_name
+    : module_name
+    
+    | module_name DOT Identifier
+    
+    ;
+*/

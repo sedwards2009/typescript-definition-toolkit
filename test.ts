@@ -215,6 +215,11 @@ export function testTypeAlias(test: nodeunit.Test): void {
   roundTrip(test, `type foo = bar;`);
 }
 
+export function testImportDeclaration(test: nodeunit.Test): void {
+  roundTrip(test, `import foo = bar;`);
+}
+
+
 // export function testFunction(test: nodeunit.Test): void {
 //   roundTrip(test, `function bop(times: number): void;`);
 // }
