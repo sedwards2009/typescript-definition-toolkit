@@ -15,6 +15,7 @@ IdentifierRegexp ([$_a-zA-Z][$_a-zA-Z0-9]*)
 [0-9]+                            { return 'Numeric'; }
 <<EOF>>                           { return 'EOF'; }
 "import"                          { return 'IMPORT'; }
+"declare"                         {return 'DECLARE'; }
 "export"                          { return 'EXPORT'; }
 "require"                         { return 'REQUIRE'; }
 "any"                             { return 'ANY'; }
@@ -27,6 +28,7 @@ IdentifierRegexp ([$_a-zA-Z][$_a-zA-Z0-9]*)
 "public"                          { return 'PUBLIC'; }
 "private"                         { return 'PRIVATE'; }
 "protected"                       { return 'PROTECTED'; }
+"enum"                            { return 'ENUM'; }
 "..."                             { return 'ELLIPSIS'; }
 "?"                               { return 'QUESTIONMARK'; }
 "<"                               { return 'LANGLE'; }
@@ -41,6 +43,8 @@ IdentifierRegexp ([$_a-zA-Z][$_a-zA-Z0-9]*)
 "."                               { return 'DOT'; }
 "module"                          { return 'MODULE'; }
 "interface"                       { return 'INTERFACE'; }
+"class"                           { return 'CLASS'; }
+"constructor"                     { return 'CONSTRUCTOR'; }
 "extends"                         { return 'EXTENDS'; }
 {StringLiteral}                   { yytext = yytext.slice(1,-1); return 'String'; }
 "{"                               { this.begin('INITIAL'); return 'LBRACE'; }
@@ -95,9 +99,9 @@ declaration_element
         { $$ = $1;}
     | EXPORT import_declaration
         { $2.export = true; $$ = $2;}
-    | ambient_declaration  /* FIXME */
+    | ambient_declaration
         { $$ = $1;}
-    | EXPORT ambient_declaration  /* FIXME */
+    | EXPORT ambient_declaration
         { $2.export = true; $$ = $2;}
     | external_import_declaration /* FIXME */
         { $$ = $1;}
@@ -577,3 +581,172 @@ entity_name
     
     ;
 */
+/* Ambients */
+ambient_declaration
+    : DECLARE ambient_variable_declaration
+        { $$ = "declare " + $2;}
+    | DECLARE ambient_function_declaration
+        { $$ = "declare " + $2;}
+    | DECLARE ambient_class_declaration
+        { $$ = "declare " + $2;}
+    | DECLARE ambient_enum_declaration
+        { $$ = "declare " + $2;}
+    | DECLARE ambient_module_declaration
+        { $$ = "declare " + $2;}
+    ;
+
+ambient_variable_declaration
+    : VAR Identifier type_annotation SEMI
+        { $$ = "var " + $2 + ": " + $3 + ";"; }
+    | VAR Identifier SEMI
+        { $$ = "var " + $2 + ";"; }
+    ;
+
+ambient_function_declaration
+    : FUNCTION Identifier call_signature SEMI
+        { $$ = "function " + $2 + $3 + ";"; }
+    ;
+
+ambient_class_declaration
+    : CLASS Identifier type_parameters class_heritage LBRACE ambient_class_body RBRACE
+      { $$ = "class " + $2 + +$3 + $4 + "{" + $6 + "}"; }
+    | CLASS Identifier class_heritage LBRACE ambient_class_body RBRACE
+      { $$ = "class " + $2 + +$3 + "{" + $5 + "}"; }
+    | CLASS Identifier type_parameters class_heritage LBRACE RBRACE
+      { $$ = "class " + $2 + +$3 + $4 + "{}"; }
+    | CLASS Identifier class_heritage LBRACE RBRACE
+      { $$ = "class " + $2 + +$3 + "{}"; }
+    ;
+
+ambient_class_body
+    : ambient_class_body_elements
+    ;
+    
+ambient_class_body_elements
+    : ambient_class_body_element
+        { $$ = [$1]; }
+    | ambient_class_body_elements ambient_class_body_element
+        { $1.push($2); $$ = $1;}
+    ;
+
+ambient_class_body_element
+    : ambient_constructor_declaration
+        { $$ = $1; }
+    | ambient_property_member_declaration
+        { $$ = $1; }
+    | index_signature
+        { $$ = $1; }
+    ;
+
+ambient_constructor_declaration
+    : CONSTRUCTOR LBRACKET parameter_list RBRACKET SEMI
+        { $$ = "constructor("+ $3 + ");"; }
+    | CONSTRUCTOR LBRACKET RBRACKET SEMI
+        { $$ = "constructor();"; }
+    ;
+
+ambient_property_member_declaration
+    : STATIC property_name SEMI
+        { $$ = "static " + $2 + ";"; }
+    | property_name SEMI
+        { $$ = $1 + ";"; }
+    | STATIC property_name type_annotation SEMI
+        { $$ = "static " + $2 + $3 + ";"; }
+    | property_name type_annotation SEMI
+        { $$ = $1 + $2 + ";"; }
+    | accessibility_modifier STATIC property_name SEMI
+        { $$ = $1 + " static " + $3 + ";"; }
+    | accessibility_modifier property_name SEMI
+        { $$ = $1 + $2 + ";"; }
+    | accessibility_modifier STATIC property_name type_annotation SEMI
+        { $$ = $1 + " static " + $3 + $4 + ";"; }
+    | accessibility_modifier property_name type_annotation SEMI    
+        { $$ = $1 + $2 + $3 + ";"; }
+    | accessibility_modifier STATIC property_name call_signature SEMI
+        { $$ = $1 + " static "+ $3 + $4 + ";"; }
+    | accessibility_modifier property_name call_signature SEMI
+        { $$ = $1 + $2 + $3 + ";"; }
+    | STATIC property_name call_signature SEMI
+        { $$ = "static " + $2 + $3 + ";"; }
+    | property_name call_signature SEMI
+        { $$ = $1 + $2 + ";"; }
+    ;
+
+ambient_enum_declaration
+    : ENUM Identifier LBRACE ambient_enum_body RBRACE
+        { $$ = "enum " + $2 + " {" + $4 + "}"; }
+    | ENUM Identifier LBRACE RBRACE
+        { $$ = "enum " + $2 + " {}"; }
+    ;
+
+ambient_enum_body
+    : ambient_enum_member_list COMMA
+      { $$ = $1; }
+    | ambient_enum_member_list
+      { $$ = $1; }
+    ;
+
+ambient_enum_member_list
+    : ambient_enum_member
+        { $$ = [$1]; }
+    | ambient_enum_member_list COMMA ambient_enum_member
+        { $1.push($2); $$ = $1; }
+    ;
+
+ambient_enum_member
+    : property_name
+        { $$ = $1;}
+    | property_name EQUALS constant_enum_value
+        { $$ = $1 + " = " + $3; }
+    ;
+
+ambient_module_declaration
+    : MODULE Identifier LBRACE ambient_module_body RBRACE
+      { $$ = "module " + $2 + " {" + $4 + "}"; }
+    | MODULE Identifier LBRACE RBRACE
+      { $$ = "module " + $2 + " {}"; }
+    ;
+
+ambient_module_body
+    : ambient_module_elements
+      { $$ = $1; }
+    ;
+
+ambient_module_elements
+    : ambient_module_element
+        { $$ = [$1];}
+    | ambient_module_elements ambient_module_element
+        { $1.push($2); $$ = $1; }
+    ;
+
+ambient_module_element
+    : EXPORT ambient_variable_declaration
+        { $$ = "export " + $2; }
+    | EXPORT ambient_function_declaration
+        { $$ = "export " + $2; }
+    | EXPORT ambient_class_declaration
+        { $$ = "export " + $2; }
+    | EXPORT interface_declaration
+        { $$ = "export " + $2; }
+    | EXPORT ambient_enum_declaration
+        { $$ = "export " + $2; }
+    | EXPORT ambient_module_declaration
+        { $$ = "export " + $2; }
+    | EXPORT import_declaration
+        { $$ = "export " + $2; }
+    | ambient_variable_declaration
+        { $$ = $1; }
+    | ambient_function_declaration
+        { $$ = $1; }
+    | ambient_class_declaration
+        { $$ = $1; }
+    | interface_declaration
+        { $$ = $1; }
+    | ambient_enum_declaration
+        { $$ = $1; }
+    | ambient_module_declaration
+        { $$ = $1; }
+    | import_declaration
+        { $$ = $1; }
+    ;
+    
