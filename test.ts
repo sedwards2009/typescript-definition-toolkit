@@ -263,3 +263,13 @@ export function testCommentsInsideModule(test: nodeunit.Test): void {
   // This is just a comment.
 }`);
 }
+
+export function testOptionalParameters(test: nodeunit.Test): void {
+  roundTrip(test, `
+  declare module 'foobar' {
+  	interface Test {
+  		baz(block: any, error?: any, message?: string): void;
+  	}
+  }
+`);
+}

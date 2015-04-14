@@ -515,7 +515,7 @@ accessibility_modifier
 
 optional_parameter_list
     : optional_parameter
-        { $$ = $1; }
+        { $$ = [$1]; }
     | optional_parameter_list COMMA optional_parameter
         { $1.push($3); $$ = $1; }
     ;
