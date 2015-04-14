@@ -76,6 +76,41 @@ export function testInterface(test: nodeunit.Test): void {
 `);
 }
 
+export function testInterface2(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      aMethod(): void;
+      
+      // Just a comment
+      
+      anotherMethod(): void;
+    }
+`);
+}
+
+export function testInterface3(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      aMethod(): void;
+      anotherMethod(): void;
+      // Just a comment
+    }
+`);
+}
+
+export function testInterface4(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+      // Just a comment
+      // Just a comment
+      aMethod(): void;
+      anotherMethod(): void;
+      // Just a comment
+      // Just a comment
+    }
+`);
+}
+
 export function testInterfaceMethod(test: nodeunit.Test): void {
   roundTrip(test, `
     export interface Baz {
@@ -220,5 +255,11 @@ export function testAmbientFunction(test: nodeunit.Test): void {
 export function testDeclareModule(test: nodeunit.Test): void {
   roundTrip(test, `declare module 'foo' {
 
+}`);
+}
+
+export function testCommentsInsideModule(test: nodeunit.Test): void {
+  roundTrip(test, `declare module 'foo' {
+  // This is just a comment.
 }`);
 }

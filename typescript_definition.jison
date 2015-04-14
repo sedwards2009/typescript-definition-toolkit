@@ -321,19 +321,40 @@ object_type
     | LBRACE RBRACE
       { $$ = {type: 'Object', members: [] }; }
     ;
-    
+
+/* Original grammar
 type_body
     : type_member_list SEMI
         { $$ = $1; }
     | type_member_list
         { $$ = $1; }
     ;
-    
 type_member_list
     : type_member
       { $$ = [$1]; }
     | type_member_list SEMI type_member
-      { $1.push($3); $$ = [$1]; }
+      { $1.push($3); $$ = $1; }
+    ;
+*/
+
+type_body
+    : type_member_list
+        { $$ = [$1]; }
+    | type_member_list type_member
+        { $1.push($2); $$ = $1; }
+    | type_member_list type_member comment
+        { $1.push($2); $1.push($3); $$ = $1; }
+    ;
+
+type_member_list
+    : type_member SEMI
+        { $$ = [$1]; }
+    | comment
+        { $$ = [$1]; }
+    | type_member_list type_member SEMI
+        { $1.push($2); $$ = $1; }
+    | type_member_list comment
+        { $1.push($2); $$ = $1; }
     ;
 
 type_member
@@ -748,6 +769,8 @@ ambient_module_element
     | ambient_module_declaration
         { $$ = $1; }
     | import_declaration
+        { $$ = $1; }
+    | comment
         { $$ = $1; }
     ;
     
