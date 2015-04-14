@@ -273,3 +273,11 @@ export function testOptionalParameters(test: nodeunit.Test): void {
   }
 `);
 }
+
+export function testTypeRefInBrackets(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+    	(callback: Test): void;
+    }    
+`);
+}
