@@ -48,31 +48,25 @@ export function testExport(test: nodeunit.Test): void {
 }
 
 export function testAmbientModule(test: nodeunit.Test): void {
-  roundTrip(test, `module "FooBarMod" {
+  roundTrip(test, `declare module FooBarMod {
     
   }
 `);
 }
 
 export function testAmbientModule2(test: nodeunit.Test): void {
-  roundTrip(test, `module 'FooBarMod' {
+  roundTrip(test, `declare module FooBarMod {
     
   }
 `);
 }
 
 export function testImport(test: nodeunit.Test): void {
-  roundTrip(test, `module 'FooBarMod' {
-    import otherModule = require('otherModule');
-  }
-`);
+  roundTrip(test, `import otherModule = require('otherModule');`);
 }
 
 export function testExportImport(test: nodeunit.Test): void {
-  roundTrip(test, `module 'FooBarMod' {
-    export import otherModule = require('otherModule');
-  }
-`);
+  roundTrip(test, `export import otherModule = require('otherModule');`);
 }
 
 export function testInterface(test: nodeunit.Test): void {
@@ -219,7 +213,12 @@ export function testImportDeclaration(test: nodeunit.Test): void {
   roundTrip(test, `import foo = bar;`);
 }
 
+export function testAmbientFunction(test: nodeunit.Test): void {
+  roundTrip(test, `declare function bop(times: number): void;`);
+}
 
-// export function testFunction(test: nodeunit.Test): void {
-//   roundTrip(test, `function bop(times: number): void;`);
-// }
+export function testDeclareModule(test: nodeunit.Test): void {
+  roundTrip(test, `declare module 'foo' {
+
+}`);
+}

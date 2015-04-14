@@ -15,9 +15,10 @@ IdentifierRegexp ([$_a-zA-Z][$_a-zA-Z0-9]*)
 [0-9]+                            { return 'Numeric'; }
 <<EOF>>                           { return 'EOF'; }
 "import"                          { return 'IMPORT'; }
-"declare"                         {return 'DECLARE'; }
+"declare"                         { return 'DECLARE'; }
 "export"                          { return 'EXPORT'; }
 "require"                         { return 'REQUIRE'; }
+"function"                        { return 'FUNCTION'; }
 "any"                             { return 'ANY'; }
 "number"                          { return 'NUMBER'; }
 "boolean"                         { return 'BOOLEAN'; }
@@ -122,9 +123,9 @@ export_assignment
     ;
 
 ambient_external_module_declaration
-    : MODULE String LBRACE ambient_external_module_body RBRACE
+    : DECLARE MODULE String LBRACE ambient_external_module_body RBRACE
         { $$ = {type: "Module", name: $2, value: $4 }; }
-    | MODULE String LBRACE RBRACE
+    | DECLARE MODULE String LBRACE RBRACE
         { $$ = {type: "Module", name: $2, value: [] }; }
     ;
 
@@ -701,9 +702,9 @@ ambient_enum_member
     ;
 
 ambient_module_declaration
-    : MODULE Identifier LBRACE ambient_module_body RBRACE
+    : MODULE type_name LBRACE ambient_module_body RBRACE
       { $$ = "module " + $2 + " {" + $4 + "}"; }
-    | MODULE Identifier LBRACE RBRACE
+    | MODULE type_name LBRACE RBRACE
       { $$ = "module " + $2 + " {}"; }
     ;
 
