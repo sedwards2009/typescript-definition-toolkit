@@ -111,6 +111,31 @@ export function testInterface4(test: nodeunit.Test): void {
 `);
 }
 
+export function testTuple(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+    	pair: [string, number];
+    }    
+`);
+}
+
+export function testGenerics(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz<T,X> {
+    	pair(): T;
+      xxor(): X;
+    }    
+`);
+}
+
+export function testGenerics2(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+    	pair<T,X>(x: X): T;
+    }    
+`);
+}
+
 export function testInterfaceMethod(test: nodeunit.Test): void {
   roundTrip(test, `
     export interface Baz {
