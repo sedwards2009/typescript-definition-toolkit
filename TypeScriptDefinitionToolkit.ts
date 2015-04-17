@@ -10,7 +10,7 @@ export interface DefinitionFile {
 }
 
 export function parse(text: string): DefinitionFile {
-  return typescript_definition.parser.parse(text);
+  return typescript_definition.parse(text);
 }
 
 export function toString(defs: DefinitionFile): string {

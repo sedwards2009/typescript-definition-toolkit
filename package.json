@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "nodeunit test.js",
-    "make": "jison typescript_definition.jison && tsc"
+    "make": "pegjs typescript_definition.pegjs typescript_definition.js && tsc"
   },
   "repository": {
     "type": "git",
@@ -23,10 +23,10 @@
   },
   "homepage": "https://github.com/sedwards2009/typescript-definition-parser",
   "dependencies": {
-    "jison": "^0.4.15"
   },
   "devDependencies": {
     "nodeunit": "^0.9.1",
+    "pegjs": "^0.8.0",
     "tsd": "^0.5.7",
     "typescript": "^1.5.0-alpha"
   }

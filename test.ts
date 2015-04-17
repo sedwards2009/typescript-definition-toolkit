@@ -10,10 +10,22 @@ import nodeunit = require("nodeunit");
 import toolkit = require("./TypeScriptDefinitionToolkit");
 
 function roundTrip(test: nodeunit.Test, text: string): void {
-  const defs = toolkit.parse(text);
-  console.log(JSON.stringify(defs));
-  // const newText = toolkit.toString(defs);
-  // test.equal(newText, text);
+  try {
+    const defs = toolkit.parse(text);
+    console.log(JSON.stringify(defs));
+    // const newText = toolkit.toString(defs);
+    // test.equal(newText, text);
+  } catch(e) {
+    console.log("------------------------------------------------------------");
+    console.log("Failed to parse input: ");
+    console.log(text);
+    console.log("----------");
+    console.log(e);
+    test.equals(false, true, "Exception thrown during parse.");
+    test.done();
+    return;
+  }
+  test.equals(true, true, "");
   test.done();
 }
 
@@ -63,10 +75,6 @@ export function testAmbientModule2(test: nodeunit.Test): void {
 
 export function testImport(test: nodeunit.Test): void {
   roundTrip(test, `import otherModule = require('otherModule');`);
-}
-
-export function testExportImport(test: nodeunit.Test): void {
-  roundTrip(test, `export import otherModule = require('otherModule');`);
 }
 
 export function testInterface(test: nodeunit.Test): void {

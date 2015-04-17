@@ -1,5 +1,5 @@
 
 declare module typescript_definition {
-  export var parser: { parse(text: string): any; };
+  export function parse(text: string): any;
 }
 export = typescript_definition;
