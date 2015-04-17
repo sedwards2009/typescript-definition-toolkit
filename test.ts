@@ -314,3 +314,10 @@ export function testTypeRefInBrackets(test: nodeunit.Test): void {
     }    
 `);
 }
+
+export function testArrow(test: nodeunit.Test): void {
+  roundTrip(test, `export interface Foo {
+    baz: () => void;
+  }
+`);
+}

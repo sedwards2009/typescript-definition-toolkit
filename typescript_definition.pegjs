@@ -249,19 +249,19 @@ union_type
     = primary_type PIPE primary_or_union_type
 
 function_type
-    = type_parameters LBRACKET parameter_list RBRACKET ARROW type
-    / LBRACKET parameter_list RBRACKET ARROW type
-    / type_parameters LBRACKET RBRACKET ARROW type
-    / LBRACKET RBRACKET ARROW type
+    = type_parameters _ LBRACKET _ parameter_list _ RBRACKET _ ARROW _ type
+    / LBRACKET _ parameter_list _ RBRACKET _ ARROW _ type
+    / type_parameters _ LBRACKET _ RBRACKET _ ARROW _ type
+    / LBRACKET _ RBRACKET _ ARROW _ type
 
 constructor_type
-    = NEW type_parameters LBRACKET parameter_list RBRACKET ARROW type
-    / NEW LBRACKET parameter_list RBRACKET ARROW type
-    / NEW type_parameters LBRACKET RBRACKET ARROW type
-    / NEW LBRACKET RBRACKET ARROW type
+    = NEW _ type_parameters _ LBRACKET _ parameter_list _ RBRACKET _ ARROW _ type
+    / NEW _ LBRACKET _ parameter_list _ RBRACKET _ ARROW _ type
+    / NEW _ type_parameters _ LBRACKET RBRACKET _ ARROW _ type
+    / NEW _ LBRACKET _ RBRACKET _ ARROW _ type
 
 type_query
-    = TYPEOF type_query_expression
+    = TYPEOF __ type_query_expression
     
 type_query_expression
     = Identifier (DOT Identifier)*
