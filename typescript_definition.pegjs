@@ -1,12 +1,43 @@
 /* Parser for TypeScript definition files. */
 
+{
+var WHITESPACE = 0;
+var MODULE = 1;
+var INTERFACE = 2;
+
+}
+
 start
-    = _ result:declaration_element* _
-        { return result; }
+    = front:_ result:declaration_element* tail:_
+        {
+        if (front !== null) {
+          result.push(front);
+        }
+        if (tail !== null) {
+          result.push(tail);
+        }
+        return result;
+        }
+                 
+_ "WhiteSpace" = value:$([ \t\r\n]* (comment [ \t\r\n]*)*)
+    {
+      return { type: WHITESPACE, value: value };
+    }
 
-_ "WhiteSpace" = $([ \t\r\n]* (comment [ \t\r\n]*)*)
+__ "MandatoryWhiteSpace" = value:$([ \t\r\n]+ (comment [ \t\r\n]*)*)
+    {
+      return { type: WHITESPACE, value: value };
+    }
 
-__ "MandatoryWhiteSpace" = $([ \t\r\n]+ (comment [ \t\r\n]*)*)
+comment
+    = SingleLineComment
+    / MultiLineComment
+
+SingleLineComment
+    = $("//" $([^\x0d\x0a]* [\x0d\x0a]))
+    
+MultiLineComment
+    = $("/*" $(!"*/" .)* "*/")
 
 IMPORT = "import"
 
@@ -116,23 +147,14 @@ declaration_element
     / external_import_declaration /* FIXME */
     / EXPORT external_import_declaration /* FIXME */
 
-comment
-    = SingleLineComment
-    / MultiLineComment
-
-SingleLineComment
-    = "//" $[^\x0d\x0a]* [\x0d\x0a]
-    
-MultiLineComment
-    = "/*" $(!"*/" .)* "*/"
-
-
 export_assignment
     = EXPORT _ EQUALS _ Identifier _ SEMI
 
 ambient_external_module_declaration
-    = DECLARE __ MODULE __ StringLiteral _ LBRACE _ (ambient_external_module_element _)* RBRACE
-
+    = DECLARE __ MODULE __ name:StringLiteral _ LBRACE _ members:(ambient_external_module_element _)* RBRACE
+    {
+        return {type: MODULE, members: members};
+    }
 
 ambient_external_module_element
     = EXPORT __ external_import_declaration _
@@ -455,7 +477,6 @@ ambient_module_element
     / ambient_enum_declaration
     / ambient_module_declaration
     / import_declaration
-    / comment
     
 /* Class */
 // class_declaration
