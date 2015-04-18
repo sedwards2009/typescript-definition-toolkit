@@ -147,10 +147,7 @@ external_module_reference
     = REQUIRE _ LBRACKET _ StringLiteral _ RBRACKET
 
 interface_declaration
-    = INTERFACE __ Identifier _ type_parameters __ interface_extends_clause _ object_type
-    / INTERFACE __ Identifier __ interface_extends_clause _ object_type
-    / INTERFACE __ Identifier _ type_parameters _ object_type
-    / INTERFACE __ Identifier _ object_type
+    = INTERFACE __ Identifier (_ type_parameters)? (__ interface_extends_clause)? _ object_type
 
 interface_extends_clause
     = EXTENDS __ class_or_interface_type_list
