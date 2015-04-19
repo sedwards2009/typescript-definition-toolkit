@@ -13,7 +13,12 @@ export module Defs {
   export enum Type {
     WHITESPACE = 0,
     MODULE = 1,
-    INTERFACE = 2
+    INTERFACE = 2,
+    FUNCTION = 3,
+    FUNCTION_TYPE = 4,
+    PARAMETER = 5,
+    OBJECT_TYPE = 6,
+    OBJECT_TYPE_REF = 7
   }
   
   export interface Base {
@@ -26,6 +31,8 @@ export module Defs {
   
   export interface Module extends Base {
     name: string;
+    ambient: boolean;
+    export: boolean;
     members: Base[];
   }
   
@@ -33,6 +40,34 @@ export module Defs {
     name: string;
     extends: string[];
     members: Base[];
+    export: boolean;
+  }
+  
+  export interface Function extends Base {
+    name: string;
+    signature: FunctionType;
+  }
+  
+  export interface FunctionType extends Base {
+    typeParameters: string[];
+    returnType: ObjectType | ObjectTypeRef;
+    parameters: string[];
+  }
+  
+  export interface Parameter extends Base {
+    name: string;
+    accessibility: string;
+    required: boolean;
+    initialiser: string;
+    parameterType: ObjectType | ObjectTypeRef;
+  }
+  
+  export interface ObjectType extends Base {
+    
+  }
+  
+  export interface ObjectTypeRef extends Base {
+    
   }
 }
 

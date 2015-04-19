@@ -285,6 +285,18 @@ export function testAmbientFunction(test: nodeunit.Test): void {
   roundTrip(test, `declare function bop(times: number): void;`);
 }
 
+export function testAmbientFunction2(test: nodeunit.Test): void {
+  roundTrip(test, `declare function bop(times, blah?): void;`);
+}
+
+export function testAmbientFunction3(test: nodeunit.Test): void {
+  roundTrip(test, `declare function bop(times, blah?: number): void;`);
+}
+
+export function testAmbientFunction4(test: nodeunit.Test): void {
+  roundTrip(test, `declare function bop(blah?: number);`);
+}
+
 export function testDeclareModule(test: nodeunit.Test): void {
   roundTrip(test, `declare module 'foo' {
 

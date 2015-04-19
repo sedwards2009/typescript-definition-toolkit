@@ -4,7 +4,11 @@
 var WHITESPACE = 0;
 var MODULE = 1;
 var INTERFACE = 2;
-
+var FUNCTION = 3;
+var FUNCTION_TYPE = 4;
+var PARAMETER = 5;
+var OBJECT_TYPE = 6;
+var OBJECT_TYPE_REF = 7;
 }
 
 start
@@ -136,7 +140,7 @@ Numeric
 declaration_element
     = export_assignment
     / interface_declaration
-    / EXPORT _ interface_declaration
+    / EXPORT _ i:interface_declaration { i.export = true; return i; }
     / ambient_external_module_declaration
     / type_alias_declaration
     / EXPORT type_alias_declaration
@@ -153,7 +157,7 @@ export_assignment
 ambient_external_module_declaration
     = DECLARE __ MODULE __ name:StringLiteral _ LBRACE _ members:(ambient_external_module_element _)* RBRACE
     {
-        return {type: MODULE, members: members};
+        return {type: MODULE, name: name, members: members, ambient: true};
     }
 
 ambient_external_module_element
@@ -169,7 +173,10 @@ external_module_reference
     = REQUIRE _ LBRACKET _ StringLiteral _ RBRACKET
 
 interface_declaration
-    = INTERFACE __ Identifier (_ type_parameters)? (__ interface_extends_clause)? _ object_type
+    = INTERFACE __ name:Identifier parameters:(_ type_parameters)? extends_:(__ interface_extends_clause)? _ members:object_type
+    {
+        return {type: INTERFACE, name: name, parameters: parameters || [], extends: extends_ || [], members: members, export: false};
+    }
 
 interface_extends_clause
     = EXTENDS __ class_or_interface_type_list
@@ -211,15 +218,24 @@ primary_or_union_type
 
 primary_type
     = parenthesized_type _ array_square?
-    / predefined_type _ array_square?
-    / type_reference _ array_square?
+    / name:predefined_type _ array_square?
+    {
+      return { type: OBJECT_TYPE_REF, name: name };
+    }
+    / name:type_reference _ array_square?
+    {
+      return { type: OBJECT_TYPE_REF, name: name };
+    }
     / object_type _ array_square?
 //    / array_type
     / tuple_type _ array_square?
     / type_query _ array_square?
 
 parenthesized_type
-    = LBRACKET _ type _ RBRACKET
+    = LBRACKET _ type:type _ RBRACKET
+    {
+      return type;
+    }
     
 predefined_type
     = ANY
@@ -297,39 +313,29 @@ property_name
     / Numeric
 
 call_signature
-    = type_parameters _ LBRACKET _ parameter_list _ RBRACKET _ type_annotation
-    / LBRACKET parameter_list RBRACKET type_annotation
-    / type_parameters LBRACKET RBRACKET type_annotation
-    / LBRACKET RBRACKET type_annotation
-    / type_parameters LBRACKET parameter_list RBRACKET
-    / LBRACKET parameter_list RBRACKET
-    / type_parameters LBRACKET RBRACKET
-    / LBRACKET RBRACKET
+    = type_parameters:type_parameters? _ LBRACKET _ parameters:parameter_list? _ RBRACKET _ type_annotation:type_annotation?
+        {
+          return {type: FUNCTION_TYPE, typeParameters: type_parameters, parameters: parameters, returnType: type_annotation };
+        }
 
 parameter_list
-    = required_parameter_list _ COMMA _ optional_parameter_list COMMA rest_parameter
-    / required_parameter_list _ COMMA _ optional_parameter_list
-    / required_parameter_list _ COMMA _ rest_parameter
-    / optional_parameter_list _ COMMA _ rest_parameter
+    = required_parameter_list (_ COMMA _ optional_parameter_list)? (_ COMMA _ rest_parameter)?
+    / optional_parameter_list (_ COMMA _ rest_parameter)?
     / rest_parameter
-    / optional_parameter_list
-    / required_parameter_list
 
 required_parameter_list
     = required_parameter (_ COMMA _ required_parameter _)*
 
 required_parameter
-    = accessibility_modifier? _ Identifier _ type_annotation? ![?]  // <- Don't om nom part of an optional parameter.
-    / Identifier _ COLON _ StringLiteral
+    = accessibility:accessibility_modifier? _ name:Identifier _ type_annotation? ![?]  // <- Don't om nom part of an optional parameter.
+      {
+        return {type: PARAMETER, name: name, accessibility: accessibility, required: true };
+      }
+    / name:Identifier _ COLON _ StringLiteral
+      {
+        return {type: PARAMETER, name: name, accessibility: null, required: true };
+      }
 
-/*
-required_parameter
-    = accessibility_modifier _ Identifier _ type_annotation
-    / Identifier _ COLON _ StringLiteral
-    / Identifier _ type_annotation
-    / accessibility_modifier _ Identifier
-    / Identifier
-*/
 
 accessibility_modifier
     = PUBLIC
@@ -340,15 +346,18 @@ optional_parameter_list
     = optional_parameter (_ COMMA _ optional_parameter _)*
 
 optional_parameter
-    = accessibility_modifier _ Identifier _ QUESTIONMARK _ type_annotation
-    / accessibility_modifier _ Identifier _ QUESTIONMARK
-    / accessibility_modifier _ Identifier _ type_annotation _ initialiser
-    / accessibility_modifier _ Identifier _ initialiser
-    / Identifier _ QUESTIONMARK _ COLON _ StringLiteral
-    / Identifier _ QUESTIONMARK _ type_annotation
-    / Identifier _ QUESTIONMARK
-    / Identifier _ type_annotation _ initialiser
-    / Identifier _ initialiser
+    = accessibility:accessibility_modifier? _ name:Identifier _ QUESTIONMARK _ type:type_annotation?
+      {
+        return {type: PARAMETER, name: name, accessibility: accessibility, required: false, parameterType: type, initialiser: null };
+      }
+    / accessibility:accessibility_modifier? _ name:Identifier _ type:type_annotation? _ initialiser:initialiser?
+      {
+        return {type: PARAMETER, name: name, accessibility: accessibility, required: false, parameterType: type, initialiser: initialiser };
+      }
+    / name:Identifier _ QUESTIONMARK _ COLON _ StringLiteral
+      {
+        return {type: PARAMETER, name: name, accessibility: null, required: false, parameterType: null,   initialiser: null };
+      }
 
 initialiser
     = StringLiteral
@@ -378,7 +387,10 @@ type_alias_declaration
     = TYPE __ Identifier _ EQUALS _ type _ SEMI
 
 type_annotation
-    = COLON _ type
+    = COLON _ type:type
+    {
+      return type;
+    }
     
 import_declaration
     = IMPORT __ Identifier _ EQUALS _ entity_name _ SEMI
@@ -399,7 +411,10 @@ ambient_variable_declaration
     / VAR Identifier SEMI
 
 ambient_function_declaration
-    = FUNCTION __ Identifier _ call_signature _ SEMI
+    = FUNCTION __ name:Identifier _ signature:call_signature _ SEMI
+        {
+        return {type: FUNCTION, name: name, signature: signature};
+        }
 
 ambient_class_declaration
     = CLASS __ Identifier _ type_parameters __ class_heritage _ LBRACE _ ambient_class_body _ RBRACE
@@ -457,19 +472,22 @@ ambient_enum_member
 
 
 ambient_module_declaration
-    = MODULE _ type_name _ LBRACE _ ambient_module_body _ RBRACE
+    = MODULE _ name:type_name _ LBRACE _ members:ambient_module_body _ RBRACE
+        {
+            return {type: MODULE, name: name, members: members, ambient: true};
+        }
 
 ambient_module_body
     = ambient_module_element*
 
 ambient_module_element
-    = EXPORT __ ambient_variable_declaration
-    / EXPORT __ ambient_function_declaration
-    / EXPORT __ ambient_class_declaration
-    / EXPORT __ interface_declaration
-    / EXPORT __ ambient_enum_declaration
-    / EXPORT __ ambient_module_declaration
-    / EXPORT __ import_declaration
+    = EXPORT __ result:ambient_variable_declaration { result.export = true; return result; }
+    / EXPORT __ result:ambient_function_declaration { result.export = true; return result; }
+    / EXPORT __ result:ambient_class_declaration { result.export = true; return result; }
+    / EXPORT __ result:interface_declaration { result.export = true; return result; }
+    / EXPORT __ result:ambient_enum_declaration { result.export = true; return result; }
+    / EXPORT __ result:ambient_module_declaration { result.export = true; return result; }
+    / EXPORT __ result:import_declaration { result.export = true; return result; }
     / ambient_variable_declaration
     / ambient_function_declaration
     / ambient_class_declaration
@@ -485,10 +503,10 @@ class_heritage
     = class_extends_clause implements_clause
     
 class_extends_clause
-    = EXTENDS class_type
+    = EXTENDS class_type:class_type { return class_type; }
 
 implements_clause
-    = IMPLEMENTS class_or_interface_type_list
+    = IMPLEMENTS list:class_or_interface_type_list { return list; }
 
 class_type
     = type_reference
