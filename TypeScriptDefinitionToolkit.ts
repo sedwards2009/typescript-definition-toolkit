@@ -6,9 +6,6 @@ import nodeunit = require("nodeunit");
 import typescript_definition = require("./typescript_definition");
 
 export module Defs {
-  export interface File {
-    
-  }
   
   export enum Type {
     WHITESPACE = 0,
@@ -18,7 +15,8 @@ export module Defs {
     FUNCTION_TYPE = 4,
     PARAMETER = 5,
     OBJECT_TYPE = 6,
-    OBJECT_TYPE_REF = 7
+    OBJECT_TYPE_REF = 7,
+    IMPORT_DECLARATION = 8
   }
   
   export interface Base {
@@ -37,6 +35,7 @@ export module Defs {
   }
   
   export interface Interface extends Base {
+    ambient: boolean;
     name: string;
     extends: string[];
     members: Base[];
@@ -69,13 +68,63 @@ export module Defs {
   export interface ObjectTypeRef extends Base {
     
   }
+  
+  export interface ImportDeclaration extends Base {
+    name: string;
+    externalModule: string;
+  }
 }
 
 
-export function parse(text: string): Defs.File {
+export function parse(text: string): Defs.Base[] {
   return typescript_definition.parse(text);
 }
 
-export function toString(defs: Defs.File): string {
+export function toString(obj: Defs.Base): string {
+  
+  switch (obj.type) {
+      case Defs.Type.WHITESPACE:
+        let ws = <Defs.WhiteSpace> obj;
+        return ws.value;
+        break;
+        
+      case Defs.Type.MODULE:
+        let mod = <Defs.Module> obj;
+        return (mod.ambient ? "declare " : "") + (mod.export ? "export " : "") +"module " + mod.name + " {\n" + listToString(mod.members) + "}\n";
+        break;
+        
+      case Defs.Type.INTERFACE:
+        let inter = <Defs.Interface> obj;
+        return (inter.ambient ? "declare " : "") + (inter.export ? "export " : "") + "interface " + inter.name + " {\n" + listToString(inter.members) + "}\n";
+        break;
+        
+      case Defs.Type.FUNCTION:
+        break;
+        
+      case Defs.Type.FUNCTION_TYPE:
+        break;
+        
+      case Defs.Type.PARAMETER:
+        break;
+        
+      case Defs.Type.OBJECT_TYPE:
+        break;
+        
+      case Defs.Type.OBJECT_TYPE_REF:
+        break;
+        
+      case Defs.Type.IMPORT_DECLARATION:
+        let dec = <Defs.ImportDeclaration> obj;
+        return "import " + dec.name + " = " + dec.externalModule + ";\n";
+        break;
+        
+  }
   return "";
+}
+
+export function listToString(obj: Defs.Base[]): string {
+  if (obj === null) {
+    return "";
+  }
+  return obj.map( (x) => toString(x) ).join("");
 }

@@ -13,6 +13,11 @@ function roundTrip(test: nodeunit.Test, text: string): void {
   try {
     const defs = toolkit.parse(text);
     console.log(JSON.stringify(defs));
+    console.log("-IN---------------------------------------------------------");
+    console.log(text);
+    console.log("-OUT--------------------------------------------------------");
+    console.log(toolkit.listToString(defs));
+    console.log("------------------------------------------------------------");
     // const newText = toolkit.toString(defs);
     // test.equal(newText, text);
   } catch(e) {

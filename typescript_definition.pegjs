@@ -9,6 +9,8 @@ var FUNCTION_TYPE = 4;
 var PARAMETER = 5;
 var OBJECT_TYPE = 6;
 var OBJECT_TYPE_REF = 7;
+var IMPORT_DECLARATION = 8;
+
 }
 
 start
@@ -23,14 +25,14 @@ start
         return result;
         }
                  
-_ "WhiteSpace" = value:$([ \t\r\n]* (comment [ \t\r\n]*)*)
+_ "WhiteSpace" = value:([ \t\r\n]*) comment_list:(comment [ \t\r\n]*)*
     {
-      return { type: WHITESPACE, value: value };
+      return { type: WHITESPACE, value: value.join("") + (comment_list === null ? "" : comment_list.join("") ) };
     }
 
-__ "MandatoryWhiteSpace" = value:$([ \t\r\n]+ (comment [ \t\r\n]*)*)
+__ "MandatoryWhiteSpace" = value:[ \t\r\n]+ comment_list:(comment [ \t\r\n]*)*
     {
-      return { type: WHITESPACE, value: value };
+      return { type: WHITESPACE, value: value.join("") + (comment_list === null ? "" : comment_list.join("") ) };
     }
 
 comment
@@ -38,10 +40,10 @@ comment
     / MultiLineComment
 
 SingleLineComment
-    = $("//" $([^\x0d\x0a]* [\x0d\x0a]))
+    = $("//" [^\x0d\x0a]* [\x0d\x0a])
     
 MultiLineComment
-    = $("/*" $(!"*/" .)* "*/")
+    = $("/*" (!"*/" .)* "*/")
 
 IMPORT = "import"
 
@@ -131,8 +133,8 @@ Identifier
     = $([$_a-zA-Z][$_a-zA-Z0-9]*)
 
 StringLiteral
-    = '"' $([^"]*) '"'
-    / "'" $([^']*) "'"
+    = $('"' [^"]* '"')
+    / $("'" [^']* "'")
 
 Numeric
     = $[0-9]+
@@ -161,16 +163,35 @@ ambient_external_module_declaration
     }
 
 ambient_external_module_element
-    = EXPORT __ external_import_declaration _
-    / external_import_declaration _
-    / export_assignment _
-    / ambient_module_element _
+    = EXPORT __ dec:external_import_declaration _
+    {
+      dec.export = true;
+      return dec;
+    }
+    / dec:external_import_declaration _
+    {
+      return dec;
+    }
+    / exp:export_assignment _
+    {
+      return exp;
+    }
+    / ame:ambient_module_element _
+    {
+      return ame;
+    }
 
 external_import_declaration
-    = IMPORT __ Identifier _ EQUALS _ external_module_reference _ SEMI
+    = IMPORT __ name:Identifier _ EQUALS _ ext:external_module_reference _ SEMI
+    {
+      return { type: IMPORT_DECLARATION, name: name, externalModule: ext};
+    }
 
 external_module_reference
-    = REQUIRE _ LBRACKET _ StringLiteral _ RBRACKET
+    = REQUIRE _ LBRACKET _ name:StringLiteral _ RBRACKET
+    {
+      return name;
+    }
 
 interface_declaration
     = INTERFACE __ name:Identifier parameters:(_ type_parameters)? extends_:(__ interface_extends_clause)? _ members:object_type
@@ -252,11 +273,36 @@ type_name
     = $(Identifier (DOT Identifier)*)
 
 object_type
-    = LBRACE _ type_body _ RBRACE
+    = LBRACE _ body:type_body _ RBRACE
+    {
+      return body;
+    }
     / LBRACE _ RBRACE
+    {
+      return [];
+    }
 
 type_body
-    = (type_member _ SEMI _)*
+    = members:(type_body_member)*
+    {
+      var result = [];
+      var i;
+      for (i=0; i<members.length; i++) {
+        result = result.concat(members[i]);
+      }
+      return result;
+    }
+    
+type_body_member
+    = member:type_member _ SEMI postws:_
+    {
+      var result = [];
+      result.push(member);
+      if (postws.value !== "") {
+        result.push(postws);
+      }
+      return result;
+    }
 
 type_member_list
     = (type_member _)+ SEMI
