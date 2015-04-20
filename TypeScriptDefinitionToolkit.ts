@@ -45,18 +45,20 @@ export module Defs {
   export interface Function extends Base {
     name: string;
     signature: FunctionType;
+    ambient: boolean;
   }
   
   export interface FunctionType extends Base {
     typeParameters: string[];
     returnType: ObjectType | ObjectTypeRef;
-    parameters: string[];
+    parameters: Parameter[];
   }
   
   export interface Parameter extends Base {
     name: string;
     accessibility: string;
     required: boolean;
+    rest: boolean;
     initialiser: string;
     parameterType: ObjectType | ObjectTypeRef;
   }
@@ -66,7 +68,7 @@ export module Defs {
   }
   
   export interface ObjectTypeRef extends Base {
-    
+    name: string;
   }
   
   export interface ImportDeclaration extends Base {
@@ -81,6 +83,7 @@ export function parse(text: string): Defs.Base[] {
 }
 
 export function toString(obj: Defs.Base): string {
+  let result: string;
   
   switch (obj.type) {
       case Defs.Type.WHITESPACE:
@@ -99,9 +102,21 @@ export function toString(obj: Defs.Base): string {
         break;
         
       case Defs.Type.FUNCTION:
+        let func = <Defs.Function> obj;
+        return (func.ambient ? "declare " : "") + "function " + func.name + toString(func.signature) + ";";
         break;
         
       case Defs.Type.FUNCTION_TYPE:
+        let funcType = <Defs.FunctionType> obj;
+        result = "(";
+        result += funcType.parameters.map(
+            (p) => p.name +
+                    (p.required === false && p.rest === false ? "?" :"") +
+                    (p.parameterType !== null ? ": " + toString(p.parameterType) : "")
+          ).join(", ");
+        result += ")";
+        result += (funcType.returnType !== null ? (": "+ toString(funcType.returnType)) : "");
+        return result;
         break;
         
       case Defs.Type.PARAMETER:
@@ -111,6 +126,8 @@ export function toString(obj: Defs.Base): string {
         break;
         
       case Defs.Type.OBJECT_TYPE_REF:
+        let objTypeRef = <Defs.ObjectTypeRef> obj;
+        return objTypeRef.name;
         break;
         
       case Defs.Type.IMPORT_DECLARATION:

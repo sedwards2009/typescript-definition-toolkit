@@ -15,7 +15,6 @@
     ],
     "files": [
         "./TypeScriptDefinitionToolkit.ts",
-        "./simpletest.ts",
         "./test.ts",
         "./typescript_definition.d.ts"
     ]

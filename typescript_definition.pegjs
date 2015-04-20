@@ -361,25 +361,51 @@ property_name
 call_signature
     = type_parameters:type_parameters? _ LBRACKET _ parameters:parameter_list? _ RBRACKET _ type_annotation:type_annotation?
         {
-          return {type: FUNCTION_TYPE, typeParameters: type_parameters, parameters: parameters, returnType: type_annotation };
+          return {type: FUNCTION_TYPE, typeParameters: type_parameters, parameters: parameters || [], returnType: type_annotation };
         }
 
 parameter_list
-    = required_parameter_list (_ COMMA _ optional_parameter_list)? (_ COMMA _ rest_parameter)?
-    / optional_parameter_list (_ COMMA _ rest_parameter)?
+    = requiredParameterList:required_parameter_list optionalParameterList:(_ COMMA _ optional_parameter_list)? restParameter:(_ COMMA _ rest_parameter)?
+    {
+      if (optionalParameterList !== null) {
+        requiredParameterList = requiredParameterList.concat(optionalParameterList[3]);
+      }
+      
+      if (restParameter !== null) {
+        requiredParameterList.push(restParameter[3]);
+      }
+      
+      return requiredParameterList;
+    }
+    / optionalParameterList:optional_parameter_list restParameter:(_ COMMA _ rest_parameter)?
+    {
+      if (restParameter !== null) {
+        optionalParameterList.push(restParameter[3]);
+      }
+
+      return optionalParameterList;
+    }
     / rest_parameter
 
 required_parameter_list
-    = required_parameter (_ COMMA _ required_parameter _)*
+    = firstParameter:required_parameter otherParameters:(_ COMMA _ required_parameter _)*
+    {
+      var result = [];
+      result.push(firstParameter);
+      otherParameters.forEach( function(tup) {
+        result.push(tup[3]);
+      });
+      return result;
+    }
 
 required_parameter
-    = accessibility:accessibility_modifier? _ name:Identifier _ type_annotation? ![?]  // <- Don't om nom part of an optional parameter.
+    = accessibility:accessibility_modifier? _ name:Identifier _ type:type_annotation? ![?]  // <- Don't om nom part of an optional parameter.
       {
-        return {type: PARAMETER, name: name, accessibility: accessibility, required: true };
+        return {type: PARAMETER, name: name, accessibility: accessibility, required: true, initialiser: null, rest: false, parameterType: type};
       }
     / name:Identifier _ COLON _ StringLiteral
       {
-        return {type: PARAMETER, name: name, accessibility: null, required: true };
+        return {type: PARAMETER, name: name, accessibility: null, required: true, initialiser: null, rest: false, parameterType: null };
       }
 
 
@@ -389,20 +415,28 @@ accessibility_modifier
     / PROTECTED
 
 optional_parameter_list
-    = optional_parameter (_ COMMA _ optional_parameter _)*
+    = firstParameter:optional_parameter otherParameters:(_ COMMA _ optional_parameter _)*
+    {
+      var result = [];
+      result.push(firstParameter);
+      otherParameters.forEach( function(tup) {
+        result.push(tup[3]);
+      });
+      return result;
+    }
 
 optional_parameter
     = accessibility:accessibility_modifier? _ name:Identifier _ QUESTIONMARK _ type:type_annotation?
       {
-        return {type: PARAMETER, name: name, accessibility: accessibility, required: false, parameterType: type, initialiser: null };
+        return {type: PARAMETER, name: name, accessibility: accessibility, required: false, parameterType: type, initialiser: null, rest: false };
       }
     / accessibility:accessibility_modifier? _ name:Identifier _ type:type_annotation? _ initialiser:initialiser?
       {
-        return {type: PARAMETER, name: name, accessibility: accessibility, required: false, parameterType: type, initialiser: initialiser };
+        return {type: PARAMETER, name: name, accessibility: accessibility, required: false, parameterType: type, initialiser: initialiser, rest: false };
       }
     / name:Identifier _ QUESTIONMARK _ COLON _ StringLiteral
       {
-        return {type: PARAMETER, name: name, accessibility: null, required: false, parameterType: null,   initialiser: null };
+        return {type: PARAMETER, name: name, accessibility: null, required: false, parameterType: null,   initialiser: null, rest: false };
       }
 
 initialiser
@@ -410,8 +444,14 @@ initialiser
     / Numeric
 
 rest_parameter
-    = ELLIPSIS Identifier _ type_annotation
-    / ELLIPSIS Identifier
+    = ELLIPSIS name:Identifier _ parameterType:type_annotation
+      {
+        return {type: PARAMETER, name: name, accessibility: null, required: false, rest: true, parameterType: parameterType, initialiser: null };
+      }
+    / ELLIPSIS name:Identifier
+      {
+        return {type: PARAMETER, name: name, accessibility: null, required: false, rest: true, parameterType: null, initialiser: null };
+      }
 
 construct_signature
      = NEW _ type_parameters _ LBRACKET _ parameter_list _ RBRACKET _ type_annotation
@@ -446,11 +486,31 @@ entity_name
         
 /* Ambients */
 ambient_declaration
-    = DECLARE __ ambient_variable_declaration
-    / DECLARE __ ambient_function_declaration
-    / DECLARE __ ambient_class_declaration
-    / DECLARE __ ambient_enum_declaration
-    / DECLARE __ ambient_module_declaration
+    = DECLARE __ value:ambient_variable_declaration
+    {
+      value.ambient = true;
+      return value;
+    }
+    / DECLARE __ value:ambient_function_declaration
+    {
+      value.ambient = true;
+      return value;
+    }
+    / DECLARE __ value:ambient_class_declaration
+    {
+      value.ambient = true;
+      return value;
+    }
+    / DECLARE __ value:ambient_enum_declaration
+    {
+      value.ambient = true;
+      return value;
+    }
+    / DECLARE __ value:ambient_module_declaration
+    {
+      value.ambient = true;
+      return value;
+    }
 
 ambient_variable_declaration
     = VAR Identifier type_annotation SEMI
@@ -459,7 +519,7 @@ ambient_variable_declaration
 ambient_function_declaration
     = FUNCTION __ name:Identifier _ signature:call_signature _ SEMI
         {
-        return {type: FUNCTION, name: name, signature: signature};
+        return {type: FUNCTION, name: name, signature: signature, ambient: false};
         }
 
 ambient_class_declaration
