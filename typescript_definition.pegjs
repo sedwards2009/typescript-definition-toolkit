@@ -157,7 +157,7 @@ export_assignment
     = EXPORT _ EQUALS _ Identifier _ SEMI
 
 ambient_external_module_declaration
-    = DECLARE __ MODULE __ name:StringLiteral _ LBRACE _ members:(ambient_external_module_element _)* RBRACE
+    = DECLARE __ MODULE __ name:StringLiteral _ LBRACE _ members:(ambient_external_module_element)* RBRACE
     {
         return {type: MODULE, name: name, members: members, ambient: true};
     }
