@@ -10,7 +10,7 @@ var PARAMETER = 5;
 var OBJECT_TYPE = 6;
 var OBJECT_TYPE_REF = 7;
 var IMPORT_DECLARATION = 8;
-
+var METHOD = 9;
 }
 
 start
@@ -385,7 +385,10 @@ parameter_list
 
       return optionalParameterList;
     }
-    / rest_parameter
+    / rp:rest_parameter
+    {
+      return [rp];
+    }
 
 required_parameter_list
     = firstParameter:required_parameter otherParameters:(_ COMMA _ required_parameter _)*
@@ -467,7 +470,10 @@ index_signature
     = LSQUARE _ Identifier _ COLON _ (STRING / NUMBER) _ RSQUARE _ type_annotation
 
 method_signature
-    = property_name QUESTIONMARK? call_signature
+    = name:property_name qm:QUESTIONMARK? signature:call_signature
+    {
+      return { type: METHOD, name:name, optional: qm!==null, signature: signature };
+    }
 
 type_alias_declaration
     = TYPE __ Identifier _ EQUALS _ type _ SEMI

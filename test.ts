@@ -12,12 +12,16 @@ import toolkit = require("./TypeScriptDefinitionToolkit");
 function roundTrip(test: nodeunit.Test, text: string): void {
   try {
     const defs = toolkit.parse(text);
-    console.log(JSON.stringify(defs));
-    console.log("-IN---------------------------------------------------------");
-    console.log(text);
-    console.log("-OUT--------------------------------------------------------");
-    console.log(toolkit.listToString(defs));
-    console.log("------------------------------------------------------------");
+    let newText = toolkit.listToString(defs);
+    
+    if (normalizeWhiteSpace(text) !== normalizeWhiteSpace(newText)) {
+      console.log(JSON.stringify(defs));
+      console.log("-IN---------------------------------------------------------");
+      console.log(text);
+      console.log("-OUT--------------------------------------------------------");
+      console.log(newText);
+      console.log("------------------------------------------------------------");
+    }
     // const newText = toolkit.toString(defs);
     // test.equal(newText, text);
   } catch(e) {
@@ -32,6 +36,10 @@ function roundTrip(test: nodeunit.Test, text: string): void {
   }
   test.equals(true, true, "");
   test.done();
+}
+
+function normalizeWhiteSpace(text: string): string {
+  return text.replace(/\S+/g, " ");
 }
 
 export function testEmpty(test: nodeunit.Test): void {
@@ -231,10 +239,9 @@ export function testInterfaceNew4(test: nodeunit.Test): void {
 }
 
 export function testInterfaceDefault(test: nodeunit.Test): void {
-  roundTrip(test, `
-    export interface Baz {
-      ();
-    }
+  roundTrip(test, `export interface Baz {
+    ();
+}
 `);
 }
 

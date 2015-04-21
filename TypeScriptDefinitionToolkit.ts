@@ -16,7 +16,8 @@ export module Defs {
     PARAMETER = 5,
     OBJECT_TYPE = 6,
     OBJECT_TYPE_REF = 7,
-    IMPORT_DECLARATION = 8
+    IMPORT_DECLARATION = 8,
+    METHOD = 9
   }
   
   export interface Base {
@@ -75,6 +76,12 @@ export module Defs {
     name: string;
     externalModule: string;
   }
+  
+  export interface Method extends Base {
+    name: string;
+    optional: boolean;
+    signature: FunctionType;
+  }
 }
 
 
@@ -109,17 +116,17 @@ export function toString(obj: Defs.Base): string {
       case Defs.Type.FUNCTION_TYPE:
         let funcType = <Defs.FunctionType> obj;
         result = "(";
-        result += funcType.parameters.map(
-            (p) => p.name +
-                    (p.required === false && p.rest === false ? "?" :"") +
-                    (p.parameterType !== null ? ": " + toString(p.parameterType) : "")
-          ).join(", ");
+        result += funcType.parameters.map(toString).join(", ");
         result += ")";
         result += (funcType.returnType !== null ? (": "+ toString(funcType.returnType)) : "");
         return result;
         break;
         
       case Defs.Type.PARAMETER:
+        let param = <Defs.Parameter> obj;
+        return param.name +
+                (param.required === false && param.rest === false ? "?" :"") +
+                (param.parameterType !== null ? ": " + toString(param.parameterType) : "");
         break;
         
       case Defs.Type.OBJECT_TYPE:
@@ -135,6 +142,10 @@ export function toString(obj: Defs.Base): string {
         return "import " + dec.name + " = " + dec.externalModule + ";\n";
         break;
         
+      case Defs.Type.METHOD:
+        let method = <Defs.Method> obj;
+        return method.name + (method.optional ? "?" :"") + toString(method.signature) + ";";
+        break;          
   }
   return "";
 }
@@ -143,5 +154,5 @@ export function listToString(obj: Defs.Base[]): string {
   if (obj === null) {
     return "";
   }
-  return obj.map( (x) => toString(x) ).join("");
+  return obj.map(toString).join("");
 }
