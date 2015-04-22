@@ -17,7 +17,8 @@ export module Defs {
     OBJECT_TYPE = 6,
     OBJECT_TYPE_REF = 7,
     IMPORT_DECLARATION = 8,
-    METHOD = 9
+    METHOD = 9,
+    PROPERTY = 10
   }
   
   export interface Base {
@@ -82,6 +83,12 @@ export module Defs {
     optional: boolean;
     signature: FunctionType;
   }
+  
+  export interface Property extends Base {
+    name: string;
+    optional: boolean;
+    signature: ObjectType | ObjectTypeRef;
+  }
 }
 
 
@@ -145,7 +152,12 @@ export function toString(obj: Defs.Base): string {
       case Defs.Type.METHOD:
         let method = <Defs.Method> obj;
         return method.name + (method.optional ? "?" :"") + toString(method.signature) + ";";
-        break;          
+        break;
+        
+      case Defs.Type.PROPERTY:
+        let prop = <Defs.Property> obj;
+        return prop.name + (prop.optional ? "?" : "") + (prop.signature === null ? "" : ": " + toString(prop.signature)) + ";";
+        break;
   }
   return "";
 }

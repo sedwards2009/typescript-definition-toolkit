@@ -11,6 +11,7 @@ var OBJECT_TYPE = 6;
 var OBJECT_TYPE_REF = 7;
 var IMPORT_DECLARATION = 8;
 var METHOD = 9;
+var PROPERTY = 10;
 }
 
 start
@@ -308,7 +309,10 @@ type_member_list
     = (type_member _)+ SEMI
 
 type_member
-    = call_signature
+    = signature:call_signature
+    {
+      return {type: METHOD, name: "", optional: false, signature: signature};
+    }
     / construct_signature
     / index_signature
     / method_signature
@@ -348,10 +352,10 @@ type_query_expression
     = Identifier (DOT Identifier)*
 
 property_signature
-    = property_name QUESTIONMARK _ type_annotation
-    / property_name _ type_annotation
-    / property_name _ QUESTIONMARK
-    / property_name
+    = name:property_name qm:QUESTIONMARK? _ type_annotation:type_annotation?
+    {
+      return {type: PROPERTY, name: name, optional: qm !== null, signature: type_annotation };
+    }
 
 property_name
     = Identifier
