@@ -18,8 +18,10 @@ function roundTrip(test: nodeunit.Test, text: string): void {
       console.log(JSON.stringify(defs));
       console.log("-IN---------------------------------------------------------");
       console.log(text);
+      // console.log(normalizeWhiteSpace(text));
       console.log("-OUT--------------------------------------------------------");
       console.log(newText);
+      // console.log(normalizeWhiteSpace(newText));
       console.log("------------------------------------------------------------");
     }
     // const newText = toolkit.toString(defs);
@@ -39,7 +41,7 @@ function roundTrip(test: nodeunit.Test, text: string): void {
 }
 
 function normalizeWhiteSpace(text: string): string {
-  return text.replace(/\S+/g, " ");
+  return text.replace(/\s+/g, " ").trim();
 }
 
 export function testEmpty(test: nodeunit.Test): void {
@@ -199,90 +201,69 @@ export function testInterfaceMethod4(test: nodeunit.Test): void {
 }
 
 export function testInterfaceMethod5(test: nodeunit.Test): void {
-  roundTrip(test, `
-    export interface Baz {
-      bop(...times: number[]): void;
-    }
-`);
+  roundTrip(test, `export interface Baz {
+  bop(...times: number[]): void;
+}`);
 }
 
 export function testInterfaceNew(test: nodeunit.Test): void {
-  roundTrip(test, `
-    export interface Baz {
-      new();
-    }
-`);
+  roundTrip(test, `export interface Baz {
+  new();
+}`);
 }
 
 export function testInterfaceNew2(test: nodeunit.Test): void {
-  roundTrip(test, `
-    export interface Baz {
-      new(baz);
-    }
-`);
+  roundTrip(test, `export interface Baz {
+  new(baz);
+}`);
 }
 
 export function testInterfaceNew3(test: nodeunit.Test): void {
-  roundTrip(test, `
-    export interface Baz {
-      new(baz?);
-    }
-`);
+  roundTrip(test, `export interface Baz {
+  new(baz?);
+}`);
 }
 
 export function testInterfaceNew4(test: nodeunit.Test): void {
-  roundTrip(test, `
-    export interface Baz {
-      new(baz?: number);
-    }
-`);
+  roundTrip(test, `export interface Baz {
+  new(baz?: number);
+}`);
 }
 
 export function testInterfaceDefault(test: nodeunit.Test): void {
   roundTrip(test, `export interface Baz {
-    ();
-}
-`);
+  ();
+}`);
 }
 
 export function testInterfaceDefault2(test: nodeunit.Test): void {
-  roundTrip(test, `
-    export interface Baz {
-      (baz);
-    }
-`);
+  roundTrip(test, `export interface Baz {
+  (baz);
+}`);
 }
 
 export function testInterfaceDefault3(test: nodeunit.Test): void {
-  roundTrip(test, `
-    export interface Baz {
-      (baz?);
-    }
-`);
+  roundTrip(test, `export interface Baz {
+  (baz?);
+}`);
 }
 
 export function testInterfaceDefault4(test: nodeunit.Test): void {
-  roundTrip(test, `
-    export interface Baz {
-      (baz?: number);
-    }
-`);
+  roundTrip(test, `export interface Baz {
+  (baz?: number);
+}`);
 }
 
 export function testInterfaceIndex(test: nodeunit.Test): void {
-  roundTrip(test, `
-    export interface Baz {
-      [i: number]: string;
-    }
-`);
+  roundTrip(test, `export interface Baz {
+  [i: number]: string;
+}`);
 }
 
 export function testInterfaceIndex2(test: nodeunit.Test): void {
-  roundTrip(test, `
-    export interface Baz {
-      [i: string]: string;
-    }
-`);
+  roundTrip(test, `export interface Baz {
+  [i: string]: string;
+}`);
 }
 
 export function testTypeAlias(test: nodeunit.Test): void {
@@ -322,26 +303,23 @@ export function testCommentsInsideModule(test: nodeunit.Test): void {
 }
 
 export function testOptionalParameters(test: nodeunit.Test): void {
-  roundTrip(test, `
-  declare module 'foobar' {
-  	interface Test {
-  		baz(block: any, error?: any, message?: string): void;
+  roundTrip(test, `declare module 'foobar' {
+	 interface Test {
+  	  	baz(block: any, error?: any, message?: string): void;
   	}
-  }
-`);
+}`);
 }
 
 export function testTypeRefInBrackets(test: nodeunit.Test): void {
-  roundTrip(test, `
-    export interface Baz {
-    	(callback: Test): void;
-    }    
+  roundTrip(test, `export interface Baz {
+    (callback: Test): void;
+}
 `);
 }
 
 export function testArrow(test: nodeunit.Test): void {
   roundTrip(test, `export interface Foo {
     baz: () => void;
-  }
+}
 `);
 }

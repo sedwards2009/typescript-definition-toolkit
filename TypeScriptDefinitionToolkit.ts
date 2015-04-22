@@ -87,7 +87,7 @@ export module Defs {
   export interface Property extends Base {
     name: string;
     optional: boolean;
-    signature: ObjectType | ObjectTypeRef;
+    signature: FunctionType | ObjectType | ObjectTypeRef;
   }
 }
 
@@ -96,8 +96,12 @@ export function parse(text: string): Defs.Base[] {
   return typescript_definition.parse(text);
 }
 
-export function toString(obj: Defs.Base): string {
+export function toString(obj: Defs.Base, level: number=0, indent: string = "    "): string {
   let result: string;
+  let dent: string = "";
+  for (let i=level; i>0; i--) {
+    dent += indent;
+  }
   
   switch (obj.type) {
       case Defs.Type.WHITESPACE:
@@ -107,23 +111,25 @@ export function toString(obj: Defs.Base): string {
         
       case Defs.Type.MODULE:
         let mod = <Defs.Module> obj;
-        return (mod.ambient ? "declare " : "") + (mod.export ? "export " : "") +"module " + mod.name + " {\n" + listToString(mod.members) + "}\n";
+        return dent + (mod.ambient ? "declare " : "") + (mod.export ? "export " : "") +
+          "module " + mod.name + " {\n" + listToString(mod.members, level+1) + "}\n";
         break;
         
       case Defs.Type.INTERFACE:
         let inter = <Defs.Interface> obj;
-        return (inter.ambient ? "declare " : "") + (inter.export ? "export " : "") + "interface " + inter.name + " {\n" + listToString(inter.members) + "}\n";
+        return dent + (inter.ambient ? "declare " : "") + (inter.export ? "export " : "") +
+          "interface " + inter.name + " {\n" + listToString(inter.members, level+1) + "}\n";
         break;
         
       case Defs.Type.FUNCTION:
         let func = <Defs.Function> obj;
-        return (func.ambient ? "declare " : "") + "function " + func.name + toString(func.signature) + ";";
+        return dent + (func.ambient ? "declare " : "") + "function " + func.name + toString(func.signature) + ";";
         break;
         
       case Defs.Type.FUNCTION_TYPE:
         let funcType = <Defs.FunctionType> obj;
         result = "(";
-        result += funcType.parameters.map(toString).join(", ");
+        result += funcType.parameters.map( (p) => toString(p, level, indent) ).join(", ");
         result += ")";
         result += (funcType.returnType !== null ? (": "+ toString(funcType.returnType)) : "");
         return result;
@@ -146,25 +152,46 @@ export function toString(obj: Defs.Base): string {
         
       case Defs.Type.IMPORT_DECLARATION:
         let dec = <Defs.ImportDeclaration> obj;
-        return "import " + dec.name + " = " + dec.externalModule + ";\n";
+        return dent + "import " + dec.name + " = " + dec.externalModule + ";\n";
         break;
         
       case Defs.Type.METHOD:
         let method = <Defs.Method> obj;
-        return method.name + (method.optional ? "?" :"") + toString(method.signature) + ";";
+        return dent + method.name + (method.optional ? "?" :"") + toString(method.signature) + ";";
         break;
         
       case Defs.Type.PROPERTY:
         let prop = <Defs.Property> obj;
-        return prop.name + (prop.optional ? "?" : "") + (prop.signature === null ? "" : ": " + toString(prop.signature)) + ";";
+        return dent + prop.name + (prop.optional ? "?" : "") + (prop.signature === null ? "" : ": " +
+          toStringFunctionSignature(prop.signature)) + ";";
         break;
   }
   return "";
 }
 
-export function listToString(obj: Defs.Base[]): string {
+export function listToString(obj: Defs.Base[], level: number=0, indent: string = "    "): string {
   if (obj === null) {
     return "";
   }
-  return obj.map(toString).join("");
+  return obj.map( (item) => toString(item, level, indent) ).join("");
+}
+
+export function toStringFunctionSignature(obj: Defs.Base, level: number=0,
+    indent: string = "    "): string {
+      
+  let result: string;
+  
+  switch (obj.type) {
+      case Defs.Type.FUNCTION_TYPE:
+        let funcType = <Defs.FunctionType> obj;
+        result = "(";
+        result += funcType.parameters.map( (p) => toString(p, level, indent) ).join(", ");
+        result += ")";
+        result += (funcType.returnType !== null ? (" => "+ toString(funcType.returnType)) : " => any");
+        return result;
+        break;
+
+      default:
+        return toString(obj, level, indent);
+  }
 }

@@ -334,10 +334,10 @@ union_type
     = primary_type PIPE primary_or_union_type
 
 function_type
-    = type_parameters _ LBRACKET _ parameter_list _ RBRACKET _ ARROW _ type
-    / LBRACKET _ parameter_list _ RBRACKET _ ARROW _ type
-    / type_parameters _ LBRACKET _ RBRACKET _ ARROW _ type
-    / LBRACKET _ RBRACKET _ ARROW _ type
+    = typeParameters:type_parameters? _ LBRACKET _ parameterList:parameter_list? _ RBRACKET _ ARROW _ type:type
+    {
+      return { type: FUNCTION_TYPE, typeParameters: typeParameters, parameters: parameterList || [], returnType: type };
+    }
 
 constructor_type
     = NEW _ type_parameters _ LBRACKET _ parameter_list _ RBRACKET _ ARROW _ type
