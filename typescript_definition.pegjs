@@ -347,10 +347,7 @@ function_type
     }
 
 constructor_type
-    = NEW _ type_parameters _ LBRACKET _ parameter_list _ RBRACKET _ ARROW _ type
-    / NEW _ LBRACKET _ parameter_list _ RBRACKET _ ARROW _ type
-    / NEW _ type_parameters _ LBRACKET RBRACKET _ ARROW _ type
-    / NEW _ LBRACKET _ RBRACKET _ ARROW _ type
+    = NEW _ type_parameters? _ LBRACKET _ parameter_list? _ RBRACKET _ ARROW _ type
 
 type_query
     = TYPEOF __ type_query_expression
@@ -468,14 +465,11 @@ rest_parameter
       }
 
 construct_signature
-     = NEW _ type_parameters _ LBRACKET _ parameter_list _ RBRACKET _ type_annotation
-     / NEW _ type_parameters _ LBRACKET _ RBRACKET _ type_annotation
-     / NEW _ type_parameters _ LBRACKET _ parameter_list _ RBRACKET
-     / NEW _ type_parameters _ LBRACKET _ RBRACKET 
-     / NEW _ LBRACKET _ parameter_list _ RBRACKET _ type_annotation
-     / NEW _ LBRACKET _ RBRACKET _ type_annotation
-     / NEW _ LBRACKET _ parameter_list _ RBRACKET
-     / NEW _ LBRACKET _ RBRACKET 
+    = NEW _ type_parameters:type_parameters? _ LBRACKET _ parameters:parameter_list? _ RBRACKET _ type_annotation:type_annotation?
+    {
+      return { type: METHOD, name: "new", optional: false,
+        signature:  {type: FUNCTION_TYPE, typeParameters: type_parameters, parameters: parameters || [], returnType: type_annotation } };
+    }
 
 index_signature
     = LSQUARE _ index_name:Identifier _ COLON _ index_type:(STRING / NUMBER) _ RSQUARE _ returnType:type_annotation
