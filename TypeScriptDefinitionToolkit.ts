@@ -19,7 +19,8 @@ export module Defs {
     IMPORT_DECLARATION = 8,
     METHOD = 9,
     PROPERTY = 10,
-    TYPE_ALIAS = 11
+    TYPE_ALIAS = 11,
+    INDEX_METHOD = 12
   }
   
   export interface Base {
@@ -95,6 +96,11 @@ export module Defs {
   export interface TypeAlias extends Base {
     name: string;
     entity: ObjectType | ObjectTypeRef;
+  }
+  
+  export interface IndexMethod extends Base {
+    index: Parameter;
+    returnType: ObjectType | ObjectTypeRef;
   }
 }
 
@@ -177,6 +183,12 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         let typeAlias = <Defs.TypeAlias> obj;
         return dent + "type " + typeAlias.name + " = " + toString(typeAlias.entity) + ";";
         break;
+        
+      case Defs.Type.INDEX_METHOD:
+        let indexMethod = <Defs.IndexMethod> obj;
+        return dent + "[" + toString(indexMethod.index) + "]: " + toString(indexMethod.returnType) + ";";
+        break;
+        
   }
   return "";
 }

@@ -13,6 +13,7 @@ var IMPORT_DECLARATION = 8;
 var METHOD = 9;
 var PROPERTY = 10;
 var TYPE_ALIAS = 11;
+var INDEX_METHOD = 12;
 
 }
 
@@ -477,7 +478,13 @@ construct_signature
      / NEW _ LBRACKET _ RBRACKET 
 
 index_signature
-    = LSQUARE _ Identifier _ COLON _ (STRING / NUMBER) _ RSQUARE _ type_annotation
+    = LSQUARE _ index_name:Identifier _ COLON _ index_type:(STRING / NUMBER) _ RSQUARE _ returnType:type_annotation
+    {
+      return { type: INDEX_METHOD,
+        index: { type: PARAMETER, name: index_name, accessibility: null, required: true, rest: false,
+          parameterType: { type: OBJECT_TYPE_REF, name: index_type }, initialiser: null},
+        returnType: returnType };
+    }
 
 method_signature
     = name:property_name qm:QUESTIONMARK? signature:call_signature
