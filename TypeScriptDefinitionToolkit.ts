@@ -150,7 +150,7 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         
       case Defs.Type.PARAMETER:
         let param = <Defs.Parameter> obj;
-        return param.name +
+        return (param.rest ? "..." : "") + param.name +
                 (param.required === false && param.rest === false ? "?" :"") +
                 (param.parameterType !== null ? ": " + toString(param.parameterType) : "");
         break;
