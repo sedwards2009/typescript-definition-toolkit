@@ -12,6 +12,8 @@ var OBJECT_TYPE_REF = 7;
 var IMPORT_DECLARATION = 8;
 var METHOD = 9;
 var PROPERTY = 10;
+var TYPE_ALIAS = 11;
+
 }
 
 start
@@ -148,7 +150,11 @@ declaration_element
     / type_alias_declaration
     / EXPORT type_alias_declaration
     / import_declaration
-    / EXPORT import_declaration
+    / EXPORT import_declaration:import_declaration
+    {
+      import_declaration.export = true;;
+      return import_declaration;
+    }
     / ambient_declaration
     / EXPORT ambient_declaration
     / external_import_declaration /* FIXME */
@@ -480,7 +486,11 @@ method_signature
     }
 
 type_alias_declaration
-    = TYPE __ Identifier _ EQUALS _ type _ SEMI
+    = TYPE __ name:Identifier _ EQUALS _ entity:type _ SEMI
+    {
+      return { type: TYPE_ALIAS, name: name, entity: entity };
+    }
+
 
 type_annotation
     = COLON _ type:type
@@ -489,10 +499,21 @@ type_annotation
     }
     
 import_declaration
-    = IMPORT __ Identifier _ EQUALS _ entity_name _ SEMI
-
+    = IMPORT __ name:Identifier _ EQUALS _ en:entity_name _ SEMI
+    {
+      return { type: IMPORT_DECLARATION, name: name, externalModule: en, export: false };
+    }
+    
+    
 entity_name
-    = Identifier (DOT Identifier)*
+    = name:Identifier rest:(DOT Identifier)*
+    {
+      if (rest.length !== 0) {
+        return name + "." + rest.join(".");
+      } else {
+        return name;
+      }
+    }        
         
 /* Ambients */
 ambient_declaration

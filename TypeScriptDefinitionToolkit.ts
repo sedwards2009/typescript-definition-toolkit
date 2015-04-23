@@ -18,7 +18,8 @@ export module Defs {
     OBJECT_TYPE_REF = 7,
     IMPORT_DECLARATION = 8,
     METHOD = 9,
-    PROPERTY = 10
+    PROPERTY = 10,
+    TYPE_ALIAS = 11
   }
   
   export interface Base {
@@ -76,6 +77,7 @@ export module Defs {
   export interface ImportDeclaration extends Base {
     name: string;
     externalModule: string;
+    export: boolean;
   }
   
   export interface Method extends Base {
@@ -88,6 +90,11 @@ export module Defs {
     name: string;
     optional: boolean;
     signature: FunctionType | ObjectType | ObjectTypeRef;
+  }
+  
+  export interface TypeAlias extends Base {
+    name: string;
+    entity: ObjectType | ObjectTypeRef;
   }
 }
 
@@ -152,7 +159,7 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         
       case Defs.Type.IMPORT_DECLARATION:
         let dec = <Defs.ImportDeclaration> obj;
-        return dent + "import " + dec.name + " = " + dec.externalModule + ";\n";
+        return dent + (dec.export ? "export " : "") + "import " + dec.name + " = " + dec.externalModule + ";\n";
         break;
         
       case Defs.Type.METHOD:
@@ -164,6 +171,11 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         let prop = <Defs.Property> obj;
         return dent + prop.name + (prop.optional ? "?" : "") + (prop.signature === null ? "" : ": " +
           toStringFunctionSignature(prop.signature)) + ";";
+        break;
+        
+      case Defs.Type.TYPE_ALIAS:
+        let typeAlias = <Defs.TypeAlias> obj;
+        return dent + "type " + typeAlias.name + " = " + toString(typeAlias.entity) + ";";
         break;
   }
   return "";
