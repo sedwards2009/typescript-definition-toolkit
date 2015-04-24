@@ -14,6 +14,7 @@ var METHOD = 9;
 var PROPERTY = 10;
 var TYPE_ALIAS = 11;
 var INDEX_METHOD = 12;
+var TYPE_PARAMETER = 13;
 
 }
 
@@ -202,9 +203,9 @@ external_module_reference
     }
 
 interface_declaration
-    = INTERFACE __ name:Identifier parameters:(_ type_parameters)? extends_:(__ interface_extends_clause)? _ members:object_type
+    = INTERFACE __ name:Identifier typeParameters:(_ type_parameters)? extends_:(__ interface_extends_clause)? _ members:object_type
     {
-        return {type: INTERFACE, name: name, parameters: parameters || [], extends: extends_ || [], members: members, export: false};
+        return {type: INTERFACE, name: name, typeParameters: typeParameters !== null ? typeParameters[1] : [], extends: extends_ || [], members: members, export: false};
     }
 
 interface_extends_clause
@@ -215,17 +216,34 @@ class_or_interface_type_list
 
 /* types */
 type_parameters
-    = LANGLE _ type_parameter_list _ RANGLE
+    = LANGLE _ list:type_parameter_list _ RANGLE
+    {
+      return list;
+    }
 
 type_parameter_list
-    = type_parameter (_ COMMA _ type_parameter)*
+    = firstParameter:type_parameter otherParameters:(_ COMMA _ type_parameter)*
+    {
+      var result = [];
+      result.push(firstParameter);
+      otherParameters.forEach( function(tup) {
+        result.push(tup[3]);
+      });
+      return result;
+    }
 
 type_parameter
-    = Identifier constraint?
+    = name:Identifier extends_:constraint?
+    {
+      return { type: TYPE_PARAMETER, name: name, extends: extends_ };
+    }
 
 constraint
-    = EXTENDS type
-
+    = EXTENDS type:type
+    {
+      return type;
+    }
+    
 type_arguments
     = LANGLE type_argument_list RANGLE
 

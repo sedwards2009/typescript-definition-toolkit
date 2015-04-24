@@ -20,7 +20,8 @@ export module Defs {
     METHOD = 9,
     PROPERTY = 10,
     TYPE_ALIAS = 11,
-    INDEX_METHOD = 12
+    INDEX_METHOD = 12,
+    TYPE_PARAMETER = 13
   }
   
   export interface Base {
@@ -41,6 +42,7 @@ export module Defs {
   export interface Interface extends Base {
     ambient: boolean;
     name: string;
+    typeParameters: TypeParameter[];
     extends: string[];
     members: Base[];
     export: boolean;
@@ -53,7 +55,7 @@ export module Defs {
   }
   
   export interface FunctionType extends Base {
-    typeParameters: string[];
+    typeParameters: TypeParameter[];
     returnType: ObjectType | ObjectTypeRef;
     parameters: Parameter[];
   }
@@ -65,6 +67,11 @@ export module Defs {
     rest: boolean;
     initialiser: string;
     parameterType: ObjectType | ObjectTypeRef;
+  }
+  
+  export interface TypeParameter extends Base {
+    name: string;
+    extends: ObjectType | ObjectTypeRef;
   }
   
   export interface ObjectType extends Base {
@@ -130,8 +137,17 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         
       case Defs.Type.INTERFACE:
         let inter = <Defs.Interface> obj;
-        return dent + (inter.ambient ? "declare " : "") + (inter.export ? "export " : "") +
-          "interface " + inter.name + " {\n" + listToString(inter.members, level+1) + "}\n";
+        result = dent + (inter.ambient ? "declare " : "") + (inter.export ? "export " : "");
+        result += "interface " + inter.name;
+          
+        if (inter.typeParameters !== null && inter.typeParameters.length !==0) {
+          result += "<";
+          result += inter.typeParameters.map( (p) => toString(p) ).join(", ");
+          result += ">";
+        }
+
+        result += " {\n" + listToString(inter.members, level+1) + "}\n";
+        return result;
         break;
         
       case Defs.Type.FUNCTION:
@@ -141,7 +157,15 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         
       case Defs.Type.FUNCTION_TYPE:
         let funcType = <Defs.FunctionType> obj;
-        result = "(";
+
+        result = "";
+        if (funcType.typeParameters !== null && funcType.typeParameters.length !==0) {
+          result += "<";
+          result += funcType.typeParameters.map( (p) => toString(p) ).join(", ");
+          result += ">";
+        }
+        
+        result += "(";
         result += funcType.parameters.map( (p) => toString(p, level, indent) ).join(", ");
         result += ")";
         result += (funcType.returnType !== null ? (": "+ toString(funcType.returnType)) : "");
@@ -189,6 +213,10 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         return dent + "[" + toString(indexMethod.index) + "]: " + toString(indexMethod.returnType) + ";";
         break;
         
+      case Defs.Type.TYPE_PARAMETER:
+        let typeParameter = <Defs.TypeParameter> obj;
+        return typeParameter.name + ( typeParameter.extends !== null ? " extends " + toString(typeParameter.extends) : "");
+        break;
   }
   return "";
 }
@@ -208,7 +236,13 @@ export function toStringFunctionSignature(obj: Defs.Base, level: number=0,
   switch (obj.type) {
       case Defs.Type.FUNCTION_TYPE:
         let funcType = <Defs.FunctionType> obj;
-        result = "(";
+        result = "";
+        if (funcType.typeParameters !== null && funcType.typeParameters.length !==0) {
+          result += "<";
+          result += funcType.typeParameters.map( (p) => toString(p) ).join(", ");
+          result += ">";
+        }
+        result += "(";
         result += funcType.parameters.map( (p) => toString(p, level, indent) ).join(", ");
         result += ")";
         result += (funcType.returnType !== null ? (" => "+ toString(funcType.returnType)) : " => any");
