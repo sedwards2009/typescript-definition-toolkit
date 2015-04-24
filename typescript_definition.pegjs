@@ -246,14 +246,17 @@ primary_or_union_type
     / union_type
 
 primary_type
-    = parenthesized_type _ array_square?
-    / name:predefined_type _ array_square?
+    = name:parenthesized_type _ array:array_square
     {
-      return { type: OBJECT_TYPE_REF, name: name };
+      return { type: OBJECT_TYPE_REF, name: name + array };
     }
-    / name:type_reference _ array_square?
+    / name:predefined_type _ array:array_square
     {
-      return { type: OBJECT_TYPE_REF, name: name };
+      return { type: OBJECT_TYPE_REF, name: name + array };
+    }
+    / name:type_reference _ array:array_square
+    {
+      return { type: OBJECT_TYPE_REF, name: name + array };
     }
     / object_type _ array_square?
 //    / array_type
@@ -329,7 +332,15 @@ type_member
 //array_type
 //    = primary_type LSQUARE RSQUARE
     
-array_square = (LSQUARE RSQUARE)*
+array_square = squares:(LSQUARE RSQUARE)*
+    {
+      var result = "";
+      var i;
+      for (i=0; i<squares.length; i++) {
+        result += "[]";
+      }
+      return result;
+    }
     
 tuple_type
     = LSQUARE _ tuple_element_types _ RSQUARE
