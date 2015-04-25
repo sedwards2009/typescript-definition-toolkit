@@ -20,25 +20,32 @@ var TUPLE_TYPE = 14;
 }
 
 start
-    = front:_ result:declaration_element* tail:_
-        {
-        if (front !== null) {
-          result.push(front);
-        }
-        if (tail !== null) {
-          result.push(tail);
-        }
-        return result;
-        }
+    = result:declaration_element*
+    {
+      return result;
+    }
                  
 _ "WhiteSpace" = value:([ \t\r\n]*) comment_list:(comment [ \t\r\n]*)*
     {
       return { type: WHITESPACE, value: value.join("") + (comment_list === null ? "" : comment_list.join("") ) };
     }
 
-__ "MandatoryWhiteSpace" = value:[ \t\r\n]+ comment_list:(comment [ \t\r\n]*)*
+__ "MandatoryWhiteSpace" = front:[ \t\r\n]? comment_list:(comment [ \t\r\n]*)+
     {
-      return { type: WHITESPACE, value: value.join("") + (comment_list === null ? "" : comment_list.join("") ) };
+      var value = "";
+      if (front !== null) {
+        value += front.join("");
+      }
+      
+      if (comment_list !== null) {
+        value += comment_list.map( function(cl) { return cl[0] + cl[1].join(""); } ).join("");
+      }
+
+      return { type: WHITESPACE, value: value };
+    }
+    / value:[ \t\r\n]+
+    {
+      return { type: WHITESPACE, value: value.join("") };
     }
 
 comment
@@ -162,12 +169,16 @@ declaration_element
     / EXPORT ambient_declaration
     / external_import_declaration /* FIXME */
     / EXPORT external_import_declaration /* FIXME */
-
+    / ws:__
+    {
+      return ws;
+    }
+    
 export_assignment
     = EXPORT _ EQUALS _ Identifier _ SEMI
 
 ambient_external_module_declaration
-    = DECLARE __ MODULE __ name:StringLiteral _ LBRACE _ members:(ambient_external_module_element)* RBRACE
+    = DECLARE __ MODULE __ name:StringLiteral _ LBRACE members:(ambient_external_module_element)* RBRACE
     {
         return {type: MODULE, name: name, members: members, ambient: true};
     }
@@ -190,7 +201,11 @@ ambient_external_module_element
     {
       return ame;
     }
-
+    / ws:__
+    {
+    return ws;
+    }
+    
 external_import_declaration
     = IMPORT __ name:Identifier _ EQUALS _ ext:external_module_reference _ SEMI
     {
@@ -306,13 +321,9 @@ type_name
     = $(Identifier (DOT Identifier)*)
 
 object_type
-    = LBRACE _ body:type_body _ RBRACE
+    = LBRACE body:type_body RBRACE
     {
       return body;
-    }
-    / LBRACE _ RBRACE
-    {
-      return [];
     }
 
 type_body
@@ -325,18 +336,17 @@ type_body
       }
       return result;
     }
-    
-type_body_member
-    = member:type_member _ SEMI postws:_
-    {
-      var result = [];
-      result.push(member);
-      if (postws.value !== "") {
-        result.push(postws);
-      }
-      return result;
-    }
 
+type_body_member
+    = member:type_member _ SEMI
+    {
+      return [member];
+    }
+    / ws:__
+    {
+      return [ws];
+    }
+    
 type_member_list
     = (type_member _)+ SEMI
 
