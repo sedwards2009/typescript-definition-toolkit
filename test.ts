@@ -94,7 +94,7 @@ export function testImport(test: nodeunit.Test): void {
 
 export function testInterface(test: nodeunit.Test): void {
   roundTrip(test, `
-    export interface Baz extends smeg.Foo{
+    export interface Baz extends smeg.Foo {
     }
 `);
 }

@@ -221,14 +221,26 @@ external_module_reference
 interface_declaration
     = INTERFACE __ name:Identifier typeParameters:(_ type_parameters)? extends_:(__ interface_extends_clause)? _ members:object_type
     {
-        return {type: INTERFACE, name: name, typeParameters: typeParameters !== null ? typeParameters[1] : [], extends: extends_ || [], members: members, export: false};
+      return {type: INTERFACE, name: name, typeParameters: typeParameters !== null ? typeParameters[1] : [],
+        extends: (extends_ === null ? [] : extends_[1]), members: members, export: false};
     }
 
 interface_extends_clause
-    = EXTENDS __ class_or_interface_type_list
+    = EXTENDS __ list:class_or_interface_type_list
+    {
+      return list;
+    }
 
 class_or_interface_type_list
-    = type_reference (_ COMMA _ type_reference)*
+    = head:type_reference rest:(_ COMMA _ type_reference)*
+    {
+      var result = [];
+      result.push(head);
+      rest.forEach( function(item) {
+        result.push(item[3]);
+      });
+      return result;
+    }
 
 /* types */
 type_parameters
@@ -261,12 +273,22 @@ constraint
     }
     
 type_arguments
-    = LANGLE type_argument_list RANGLE
+    = LANGLE _ list:type_argument_list _ RANGLE
+    {
+      return list;
+    }
 
 type_argument_list
-    = type_argument
-    / type_argument COMMA type_argument_list
-
+    = firstParameter:type_argument otherParameters:(_ COMMA _ type_argument)*
+    {
+      var result = [];
+      result.push(firstParameter);
+      otherParameters.forEach( function(tup) {
+        result.push(tup[3]);
+      });
+      return result;
+    }
+    
 type_argument
     = type
 

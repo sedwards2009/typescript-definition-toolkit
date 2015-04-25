@@ -157,7 +157,11 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
           result += inter.typeParameters.map( (p) => toString(p) ).join(", ");
           result += ">";
         }
-
+        
+        if (inter.extends !== null && inter.extends.length !== 0) {
+          result += " extends " + inter.extends.join(", ");
+        }
+        
         result += " {\n" + listToString(inter.members, level+1) + "}\n";
         return result;
         break;
