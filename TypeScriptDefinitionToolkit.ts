@@ -21,7 +21,8 @@ export module Defs {
     PROPERTY = 10,
     TYPE_ALIAS = 11,
     INDEX_METHOD = 12,
-    TYPE_PARAMETER = 13
+    TYPE_PARAMETER = 13,
+    TUPLE_TYPE = 14
   }
   
   export interface Base {
@@ -56,7 +57,7 @@ export module Defs {
   
   export interface FunctionType extends Base {
     typeParameters: TypeParameter[];
-    returnType: ObjectType | ObjectTypeRef;
+    returnType: PrimaryType;
     parameters: Parameter[];
   }
   
@@ -66,22 +67,33 @@ export module Defs {
     required: boolean;
     rest: boolean;
     initialiser: string;
-    parameterType: ObjectType | ObjectTypeRef;
+    parameterType: PrimaryType;
   }
   
   export interface TypeParameter extends Base {
     name: string;
-    extends: ObjectType | ObjectTypeRef;
+    extends: PrimaryType;
   }
   
-  export interface ObjectType extends Base {
-    
+  // -- Types
+  export interface PrimaryType extends Base {
   }
   
-  export interface ObjectTypeRef extends Base {
+  export interface ObjectType extends PrimaryType {
+    members: Base[];
+  }
+  
+  export interface ObjectTypeRef extends PrimaryType {
     name: string;
   }
   
+  export interface TupleType extends PrimaryType {
+    members: PrimaryType[];
+  }
+  
+  // FIXME add an array type??
+  // -- end types.
+    
   export interface ImportDeclaration extends Base {
     name: string;
     externalModule: string;
@@ -97,7 +109,7 @@ export module Defs {
   export interface Property extends Base {
     name: string;
     optional: boolean;
-    signature: FunctionType | ObjectType | ObjectTypeRef;
+    signature: FunctionType | PrimaryType;
   }
   
   export interface TypeAlias extends Base {
@@ -107,7 +119,7 @@ export module Defs {
   
   export interface IndexMethod extends Base {
     index: Parameter;
-    returnType: ObjectType | ObjectTypeRef;
+    returnType: PrimaryType;
   }
 }
 
@@ -216,6 +228,11 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
       case Defs.Type.TYPE_PARAMETER:
         let typeParameter = <Defs.TypeParameter> obj;
         return typeParameter.name + ( typeParameter.extends !== null ? " extends " + toString(typeParameter.extends) : "");
+        break;
+        
+      case Defs.Type.TUPLE_TYPE:
+        let tuple = <Defs.TupleType> obj;
+        return "[" + tuple.members.map( (t) => toString(t, level+1, indent) ).join(", ") + "]";
         break;
   }
   return "";

@@ -15,6 +15,7 @@ var PROPERTY = 10;
 var TYPE_ALIAS = 11;
 var INDEX_METHOD = 12;
 var TYPE_PARAMETER = 13;
+var TUPLE_TYPE = 14;
 
 }
 
@@ -276,10 +277,13 @@ primary_type
     {
       return { type: OBJECT_TYPE_REF, name: name + array };
     }
-    / object_type _ array_square?
+    / object_type _ array:array_square?
 //    / array_type
-    / tuple_type _ array_square?
-    / type_query _ array_square?
+    / tupleType:tuple_type _ array:array_square?
+    {
+      return tupleType;
+    }
+    / type_query _ array:array_square?
 
 parenthesized_type
     = LBRACKET _ type:type _ RBRACKET
@@ -361,10 +365,21 @@ array_square = squares:(LSQUARE RSQUARE)*
     }
     
 tuple_type
-    = LSQUARE _ tuple_element_types _ RSQUARE
+    = LSQUARE _ types:tuple_element_types _ RSQUARE
+    {
+      return {type: TUPLE_TYPE, members: types};
+    }
 
 tuple_element_types
-    = type (_ COMMA _ type)*
+    = type:type rest:(_ COMMA _ type)*
+    {
+      var result = [];
+      result.push(type);
+      rest.forEach( function(r) {
+        result.push(r[3]);
+      });
+      return result;
+    }
 
 union_type
     = primary_type PIPE primary_or_union_type
