@@ -22,7 +22,8 @@ export module Defs {
     TYPE_ALIAS = 11,
     INDEX_METHOD = 12,
     TYPE_PARAMETER = 13,
-    TUPLE_TYPE = 14
+    TUPLE_TYPE = 14,
+    EXPORT_ASSIGNMENT = 15
   }
   
   export interface Base {
@@ -122,6 +123,10 @@ export module Defs {
   export interface IndexMethod extends Base {
     index: Parameter;
     returnType: PrimaryType;
+  }
+  
+  export interface ExportAssignment extends Base {
+    name: string;
   }
 }
 
@@ -240,6 +245,11 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
       case Defs.Type.TUPLE_TYPE:
         let tuple = <Defs.TupleType> obj;
         return "[" + tuple.members.map( (t) => toString(t, level+1, indent) ).join(", ") + "]";
+        break;
+        
+      case Defs.Type.EXPORT_ASSIGNMENT:
+        let exportAssign = <Defs.ExportAssignment> obj;
+        return dent + "export = " + exportAssign.name + ";\n";
         break;
   }
   return "";

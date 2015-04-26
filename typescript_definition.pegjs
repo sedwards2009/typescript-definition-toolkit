@@ -16,6 +16,7 @@ var TYPE_ALIAS = 11;
 var INDEX_METHOD = 12;
 var TYPE_PARAMETER = 13;
 var TUPLE_TYPE = 14;
+var EXPORT_ASSIGNMENT = 15;
 
 }
 
@@ -181,7 +182,10 @@ declaration_element
     }
     
 export_assignment
-    = EXPORT _ EQUALS _ Identifier _ SEMI
+    = EXPORT _ EQUALS _ name:Identifier _ SEMI
+    {
+      return {type: EXPORT_ASSIGNMENT, name: name };
+    }
 
 ambient_external_module_declaration
     = DECLARE __ MODULE __ name:StringLiteral _ LBRACE members:(ambient_external_module_element)* RBRACE
