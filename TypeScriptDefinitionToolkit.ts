@@ -38,6 +38,7 @@ export module Defs {
     ambient: boolean;
     export: boolean;
     members: Base[];
+    external: boolean;
   }
   
   export interface Interface extends Base {
@@ -98,6 +99,7 @@ export module Defs {
     name: string;
     externalModule: string;
     export: boolean;
+    external: boolean;
   }
   
   export interface Method extends Base {
@@ -144,7 +146,7 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
       case Defs.Type.MODULE:
         let mod = <Defs.Module> obj;
         return dent + (mod.ambient ? "declare " : "") + (mod.export ? "export " : "") +
-          "module " + mod.name + " {\n" + listToString(mod.members, level+1) + "}\n";
+          "module " + (mod.external ? "'" + mod.name + "'" : mod.name) + " {\n" + listToString(mod.members, level+1) + "}\n";
         break;
         
       case Defs.Type.INTERFACE:
@@ -205,7 +207,8 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         
       case Defs.Type.IMPORT_DECLARATION:
         let dec = <Defs.ImportDeclaration> obj;
-        return dent + (dec.export ? "export " : "") + "import " + dec.name + " = " + dec.externalModule + ";\n";
+        return dent + (dec.export ? "export " : "") + "import " + dec.name + " = " +
+          (dec.external ? "require('"+ dec.externalModule + "')" : dec.externalModule) + ";\n";
         break;
         
       case Defs.Type.METHOD:

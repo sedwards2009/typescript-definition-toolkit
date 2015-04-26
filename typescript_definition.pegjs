@@ -146,8 +146,14 @@ Identifier
     = $([$_a-zA-Z][$_a-zA-Z0-9]*)
 
 StringLiteral
-    = $('"' [^"]* '"')
-    / $("'" [^']* "'")
+    = str:('"' [^"]* '"')
+    {
+      return str[1].join("");
+    }
+    / str:("'" [^']* "'")
+    {
+      return str[1].join("");
+    }
 
 Numeric
     = $[0-9]+
@@ -180,7 +186,7 @@ export_assignment
 ambient_external_module_declaration
     = DECLARE __ MODULE __ name:StringLiteral _ LBRACE members:(ambient_external_module_element)* RBRACE
     {
-        return {type: MODULE, name: name, members: members, ambient: true};
+        return {type: MODULE, name: name, members: members, ambient: true, external: true};
     }
 
 ambient_external_module_element
@@ -209,7 +215,7 @@ ambient_external_module_element
 external_import_declaration
     = IMPORT __ name:Identifier _ EQUALS _ ext:external_module_reference _ SEMI
     {
-      return { type: IMPORT_DECLARATION, name: name, externalModule: ext};
+      return { type: IMPORT_DECLARATION, name: name, externalModule: ext, export: false, external: true};
     }
 
 external_module_reference
@@ -578,7 +584,7 @@ type_annotation
 import_declaration
     = IMPORT __ name:Identifier _ EQUALS _ en:entity_name _ SEMI
     {
-      return { type: IMPORT_DECLARATION, name: name, externalModule: en, export: false };
+      return { type: IMPORT_DECLARATION, name: name, externalModule: en, export: false, external: false };
     }
     
     
@@ -687,9 +693,9 @@ ambient_enum_member
 
 ambient_module_declaration
     = MODULE _ name:type_name _ LBRACE _ members:ambient_module_body _ RBRACE
-        {
-            return {type: MODULE, name: name, members: members, ambient: true};
-        }
+    {
+      return {type: MODULE, name: name, members: members, ambient: true, external: false};
+    }
 
 ambient_module_body
     = ambient_module_element*
