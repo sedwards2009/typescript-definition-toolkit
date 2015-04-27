@@ -23,7 +23,9 @@ export module Defs {
     INDEX_METHOD = 12,
     TYPE_PARAMETER = 13,
     TUPLE_TYPE = 14,
-    EXPORT_ASSIGNMENT = 15
+    EXPORT_ASSIGNMENT = 15,
+    CLASS_DECLARATION = 16,
+    AMBIENT_VARIABLE = 17
   }
   
   export interface Base {
@@ -46,7 +48,7 @@ export module Defs {
     ambient: boolean;
     name: string;
     typeParameters: TypeParameter[];
-    extends: string[];
+    extends: ObjectTypeRef[];
     members: Base[];
     export: boolean;
   }
@@ -107,12 +109,15 @@ export module Defs {
     name: string;
     optional: boolean;
     signature: FunctionType;
+    static: boolean;
   }
   
   export interface Property extends Base {
     name: string;
     optional: boolean;
     signature: FunctionType | PrimaryType;
+    static: boolean;
+    access: string;
   }
   
   export interface TypeAlias extends Base {
@@ -127,6 +132,20 @@ export module Defs {
   
   export interface ExportAssignment extends Base {
     name: string;
+  }
+  
+  export interface AmbientVariable extends Base {
+    name: string;
+    signature: FunctionType | PrimaryType;
+  }
+  
+  export interface ClassDeclaration extends Base {
+    name: string;
+    typeParameters: TypeParameter[];
+    members: Base[];
+    ambient: boolean;
+    extends: ObjectTypeRef;
+    implements: ObjectTypeRef[];
   }
 }
 
@@ -166,7 +185,7 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         }
         
         if (inter.extends !== null && inter.extends.length !== 0) {
-          result += " extends " + inter.extends.join(", ");
+          result += " extends " + inter.extends.map( (e) => toString(e) ).join(", ");
         }
         
         result += " {\n" + listToString(inter.members, level+1) + "}\n";
@@ -218,7 +237,7 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         
       case Defs.Type.METHOD:
         let method = <Defs.Method> obj;
-        return dent + method.name + (method.optional ? "?" :"") + toString(method.signature) + ";";
+        return dent + (method.static ? "static " : "") + method.name + (method.optional ? "?" :"") + toString(method.signature) + ";";
         break;
         
       case Defs.Type.PROPERTY:
@@ -250,6 +269,27 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
       case Defs.Type.EXPORT_ASSIGNMENT:
         let exportAssign = <Defs.ExportAssignment> obj;
         return dent + "export = " + exportAssign.name + ";\n";
+        break;
+        
+      case Defs.Type.AMBIENT_VARIABLE:
+        let ambientVariable = <Defs.AmbientVariable> obj;
+        return dent + "declare var " + ambientVariable.name +
+          (ambientVariable.signature === null ? "" : ": " + toString(ambientVariable.signature)) +  ";\n";
+        break;
+        
+      case Defs.Type.CLASS_DECLARATION:
+        let classDec = <Defs.ClassDeclaration> obj;
+        result = dent;
+        result += classDec.ambient ? "declare " : "";
+        result += "class " + classDec.name;
+        if (classDec.extends !== null) {
+          result += " extends " + toString(classDec.extends);
+        }
+        if (classDec.implements !== null && classDec.implements.length !== 0) {
+          result += " implements " + classDec.implements.map( (i) => toString(i)).join(", ");
+        }
+        result += " {\n" + listToString(classDec.members, level+1, indent) + "}\n";
+        return result;
         break;
   }
   return "";

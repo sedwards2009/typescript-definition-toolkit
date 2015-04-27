@@ -17,6 +17,8 @@ var INDEX_METHOD = 12;
 var TYPE_PARAMETER = 13;
 var TUPLE_TYPE = 14;
 var EXPORT_ASSIGNMENT = 15;
+var CLASS_DECLARATION = 16;
+var AMBIENT_VARIABLE = 17;
 
 }
 
@@ -320,9 +322,10 @@ primary_type
     {
       return { type: OBJECT_TYPE_REF, name: name + array };
     }
-    / name:type_reference _ array:array_square
+    / tr:type_reference _ array:array_square
     {
-      return { type: OBJECT_TYPE_REF, name: name + array };
+      tr.name = tr.name + array;
+      return tr;
     }
     / object_type _ array:array_square?
 //    / array_type
@@ -346,8 +349,14 @@ predefined_type
     / VOID
 
 type_reference
-    = type_name _ type_arguments
-    / type_name
+    = name:type_name _ ta:type_arguments
+    {
+      return { type: OBJECT_TYPE_REF, name: name };
+    }
+    / name:type_name
+    {
+      return { type: OBJECT_TYPE_REF, name: name };
+    }
 
 type_name
     = $(Identifier (DOT Identifier)*)
@@ -385,7 +394,7 @@ type_member_list
 type_member
     = signature:call_signature
     {
-      return {type: METHOD, name: "", optional: false, signature: signature};
+      return {type: METHOD, name: "", optional: false, signature: signature, static: false, };
     }
     / construct_signature
     / index_signature
@@ -444,7 +453,7 @@ type_query_expression
 property_signature
     = name:property_name qm:QUESTIONMARK? _ type_annotation:type_annotation?
     {
-      return {type: PROPERTY, name: name, optional: qm !== null, signature: type_annotation };
+      return {type: PROPERTY, name: name, access: null, static: false, optional: qm !== null, signature: type_annotation };
     }
 
 property_name
@@ -553,7 +562,7 @@ rest_parameter
 construct_signature
     = NEW _ type_parameters:type_parameters? _ LBRACKET _ parameters:parameter_list? _ RBRACKET _ type_annotation:type_annotation?
     {
-      return { type: METHOD, name: "new", optional: false,
+      return { type: METHOD, name: "new", optional: false, static: false, 
         signature:  {type: FUNCTION_TYPE, typeParameters: type_parameters, parameters: parameters || [], returnType: type_annotation } };
     }
 
@@ -569,7 +578,7 @@ index_signature
 method_signature
     = name:property_name qm:QUESTIONMARK? signature:call_signature
     {
-      return { type: METHOD, name:name, optional: qm!==null, signature: signature };
+      return { type: METHOD, name:name, optional: qm!==null, static: false, signature: signature };
     }
 
 type_alias_declaration
@@ -631,8 +640,10 @@ ambient_declaration
     }
 
 ambient_variable_declaration
-    = VAR Identifier type_annotation SEMI
-    / VAR Identifier SEMI
+    = VAR _ name:Identifier type_annotation:type_annotation? _ SEMI
+    {
+      return {type: AMBIENT_VARIABLE, name:name, signature: type_annotation};
+    }
 
 ambient_function_declaration
     = FUNCTION __ name:Identifier _ signature:call_signature _ SEMI
@@ -641,8 +652,12 @@ ambient_function_declaration
         }
 
 ambient_class_declaration
-    = CLASS __ Identifier _ type_parameters __ class_heritage _ LBRACE _ ambient_class_body _ RBRACE
-    / CLASS __ Identifier __ class_heritage _ LBRACE _ ambient_class_body _ RBRACE
+    = CLASS __ name:Identifier _ type_parameters:type_parameters? _  extends_:(EXTENDS __ class_type)? impls:(IMPLEMENTS __ class_or_interface_type_list)? _ LBRACE members:ambient_class_body RBRACE
+    {
+      return {type: CLASS_DECLARATION, name: name, typeParameters: type_parameters, members: members, ambient: false,
+        extends: extends_ === null || extends_ === undefined ? null : extends_[2],
+        implements: impls === null || impls === undefined ? [] : impls[2]};
+    }
 
 ambient_class_body
     = ambient_class_body_elements
@@ -652,26 +667,30 @@ ambient_class_body_elements
 
 ambient_class_body_element
     = ambient_constructor_declaration
-    / ambient_property_member_declaration
+    / prop:ambient_property_member_declaration
+    {
+      return prop;
+    }
     / index_signature
+    / ws:__
+    {
+      return ws;
+    }
 
 ambient_constructor_declaration
     = CONSTRUCTOR _ LBRACKET _ parameter_list _ RBRACKET _ SEMI
     / CONSTRUCTOR _ LBRACKET _ RBRACKET _ SEMI
 
 ambient_property_member_declaration
-    = STATIC __ property_name _ SEMI
-    / STATIC __ property_name __ type_annotation _ SEMI
-    / accessibility_modifier __ STATIC __ property_name _ SEMI
-    / accessibility_modifier __ property_name _ SEMI
-    / accessibility_modifier __ STATIC __ property_name _ type_annotation _ SEMI
-    / accessibility_modifier __ property_name _ type_annotation _ SEMI    
-    / accessibility_modifier __ STATIC _ property_name _ call_signature _ SEMI
-    / accessibility_modifier __ property_name _ call_signature _ SEMI
-    / STATIC __ property_name _ call_signature _ SEMI
-    / property_name __ call_signature _ SEMI
-    / property_name __ type_annotation _ SEMI
-    / property_name _ SEMI
+    = access:(accessibility_modifier? __) static:(STATIC __)? name:property_name _ type_annotation:type_annotation _ SEMI
+    {
+      return {type: PROPERTY, name: name, access: (access !== null ? access[0] : null), static: static!==null,
+        optional: false, signature: type_annotation };
+    }
+    / (accessibility_modifier? __) static:(STATIC __)? name:property_name _ signature:call_signature _ SEMI
+    {
+      return {type: METHOD, name: name, static: static !== null, optional: false, signature: signature};
+    }
 
 ambient_enum_declaration
     = ENUM Identifier LBRACE ambient_enum_body RBRACE
@@ -723,14 +742,17 @@ ambient_module_element
 /* Class */
 // class_declaration
 
+/* Folded this into ambient_class_declaration above.
 class_heritage
     = class_extends_clause implements_clause
-    
+        
 class_extends_clause
     = EXTENDS class_type:class_type { return class_type; }
 
 implements_clause
-    = IMPLEMENTS list:class_or_interface_type_list { return list; }
+    = IMPLEMENTS list:class_or_interface_type_list
+
+*/
 
 class_type
     = type_reference

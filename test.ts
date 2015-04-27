@@ -323,3 +323,49 @@ export function testArrow(test: nodeunit.Test): void {
 }
 `);
 }
+
+export function testAmbientVar(test: nodeunit.Test): void {
+  roundTrip(test, `declare var foobar: string;
+`);
+}
+
+export function testAmbientClass(test: nodeunit.Test): void {
+  roundTrip(test, `declare class Foobar {
+  smeg(): string;
+}
+`);
+}
+
+export function testAmbientClassProperty(test: nodeunit.Test): void {
+  roundTrip(test, `declare class Foobar {
+  beastie: string;
+}
+`);
+}
+
+export function testClassStatic(test: nodeunit.Test): void {
+  roundTrip(test, `declare class Foobar {
+  static smeg(): string;
+}
+`);
+}
+
+export function testModuleClass(test: nodeunit.Test): void {
+  roundTrip(test, `declare module Foo {
+    class Bar {
+    }  
+  }
+`);  
+}
+
+export function testAmbientClassExtends(test: nodeunit.Test): void {
+  roundTrip(test, `declare class Foobar extends FooBase {
+}
+`);
+}
+
+export function testAmbientClassImplements(test: nodeunit.Test): void {
+  roundTrip(test, `declare class Foobar implements IFoo, ISmeg {
+}
+`);
+}
