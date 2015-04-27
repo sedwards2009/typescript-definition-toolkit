@@ -19,6 +19,8 @@ var TUPLE_TYPE = 14;
 var EXPORT_ASSIGNMENT = 15;
 var CLASS_DECLARATION = 16;
 var AMBIENT_VARIABLE = 17;
+var ENUM = 18;
+var ENUM_MEMBER = 19;
 
 }
 
@@ -693,26 +695,29 @@ ambient_property_member_declaration
     }
 
 ambient_enum_declaration
-    = ENUM Identifier LBRACE ambient_enum_body RBRACE
-    / ENUM Identifier LBRACE RBRACE
-
-ambient_enum_body
-    = ambient_enum_member_list COMMA
-    / ambient_enum_member_list
-
-ambient_enum_member_list
-    = ambient_enum_member (COMMA ambient_enum_member)*
+    = ENUM _ name:Identifier _ LBRACE _ member:ambient_enum_member rest_members:(_ COMMA _ ambient_enum_member)* _ RBRACE
+    {
+      var memberList = [];
+      memberList.push(member);
+      if (rest_members !== undefined && rest_members !== null) {
+        rest_members.forEach( function(item) {
+          memberList.push(item[3]);
+        });
+      }
+      return { type: ENUM, name: name, members: memberList, export: false, ambient: false};
+    }
 
 /*
 ambient_enum_member
     = property_name
     / property_name EQUALS constant_enum_value
 */
-// FIXME
-ambient_enum_member
-    = property_name
-    / property_name EQUALS StringLiteral
 
+ambient_enum_member
+    = name:property_name value:(_ EQUALS _ (StringLiteral / Numeric))?
+    {
+      return {type: ENUM_MEMBER, name: name, value: value !== null && value !== undefined ? value[3] : null };
+    }
 
 ambient_module_declaration
     = MODULE _ name:type_name _ LBRACE _ members:ambient_module_body _ RBRACE

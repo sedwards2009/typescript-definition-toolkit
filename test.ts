@@ -369,3 +369,11 @@ export function testAmbientClassImplements(test: nodeunit.Test): void {
 }
 `);
 }
+
+export function testAmbientEnum(test: nodeunit.Test): void {
+  roundTrip(test, `declare enum Colors {
+  RED = 0,
+  GREEN,
+  BLUE
+}`);
+}

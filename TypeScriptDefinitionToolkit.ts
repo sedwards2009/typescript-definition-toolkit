@@ -25,7 +25,9 @@ export module Defs {
     TUPLE_TYPE = 14,
     EXPORT_ASSIGNMENT = 15,
     CLASS_DECLARATION = 16,
-    AMBIENT_VARIABLE = 17
+    AMBIENT_VARIABLE = 17,
+    ENUM = 18,
+    ENUM_MEMBER = 19
   }
   
   export interface Base {
@@ -146,6 +148,18 @@ export module Defs {
     ambient: boolean;
     extends: ObjectTypeRef;
     implements: ObjectTypeRef[];
+  }
+  
+  export interface Enum extends Base {
+    name: string;
+    members: EnumMember[];
+    export: boolean;
+    ambient: boolean;
+  }
+  
+  export interface EnumMember extends Base {
+    name: string;
+    value: string;
   }
 }
 
@@ -291,6 +305,27 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         result += " {\n" + listToString(classDec.members, level+1, indent) + "}\n";
         return result;
         break;
+        
+      case Defs.Type.ENUM:
+        let enumDecl = <Defs.Enum> obj;
+        result = "";
+        result += dent;
+        if (enumDecl.ambient) {
+          result += "declare ";
+        }
+        if (enumDecl.export) {
+          result += "export ";
+        }
+        result += "enum ";
+        result += enumDecl.name;
+        result += " {\n";
+        result += enumDecl.members.map( (m) => indent + dent + m.name + (m.value !== null ? " = " + m.value : "") ).join(",\n");
+        result += "\n";
+        result += dent;
+        result += "}\n";
+        return result;
+        break;
+        
   }
   return "";
 }
