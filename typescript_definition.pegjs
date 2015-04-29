@@ -32,7 +32,15 @@ start
                  
 _ "WhiteSpace" = value:([ \t\r\n]*) comment_list:(comment [ \t\r\n]*)*
     {
-      return { type: WHITESPACE, value: value.join("") + (comment_list === null ? "" : comment_list.join("") ) };
+      var result = "";
+      result += value.join("");
+      if (comment_list !== null) {
+        comment_list.forEach( function(tup) {
+          result += tup[0];
+          result += tup[1].join("");
+        });
+      }
+      return { type: WHITESPACE, value: result };
     }
 
 __ "MandatoryWhiteSpace" = front:[ \t\r\n]? comment_list:(comment [ \t\r\n]*)+
@@ -368,26 +376,45 @@ object_type
     {
       return body;
     }
+    / LBRACE ws:_ RBRACE
+    {
+      if (ws.value !== "") {
+        return [ws];
+      } else {
+        return [];
+      }
+    }
 
 type_body
-    = members:(type_body_member)*
+    = firstws:_ first:type_member _ rest:(SEMI _ type_body_member)* _ SEMI? lastws:_
     {
       var result = [];
+      if (firstws.value !== "") {
+        result.push(firstws);
+      }
+      result.push(first);
       var i;
-      for (i=0; i<members.length; i++) {
-        result = result.concat(members[i]);
+      for (i=0; i<rest.length; i++) {
+        if (rest[i][1] !== null && rest[i][1].value !== "") {
+          result.push(rest[i][1]);
+        }
+        result.push(rest[i][2]);
+      }
+      
+      if (lastws.value !== "") {
+        result.push(lastws);
       }
       return result;
     }
 
 type_body_member
-    = member:type_member _ SEMI
+    = member:type_member
     {
-      return [member];
+      return member;
     }
     / ws:__
     {
-      return [ws];
+      return ws;
     }
     
 type_member_list

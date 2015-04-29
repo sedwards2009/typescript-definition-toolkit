@@ -40,6 +40,23 @@ function roundTrip(test: nodeunit.Test, text: string): void {
   test.done();
 }
 
+function parseTest(test: nodeunit.Test, text: string): void {
+  try {
+    const defs = toolkit.parse(text);
+  } catch(e) {
+    console.log("------------------------------------------------------------");
+    console.log("Failed to parse input: ");
+    console.log(text);
+    console.log("----------");
+    console.log(e);
+    test.equals(false, true, "Exception thrown during parse.");
+    test.done();
+    return;
+  }
+  test.equals(true, true, "");
+  test.done();
+}
+
 function normalizeWhiteSpace(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
@@ -376,4 +393,9 @@ export function testAmbientEnum(test: nodeunit.Test): void {
   GREEN,
   BLUE
 }`);
+}
+
+export function testInterfaceNoLastSemi(test: nodeunit.Test): void {
+  parseTest(test, `interface Foo {
+  bar(): void}`);
 }

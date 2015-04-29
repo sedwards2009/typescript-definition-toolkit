@@ -3,3 +3,4 @@ typescript_definition.js
 TypeScriptDefinitionToolkit.js
 npm-debug.log
 node_modules/
+*.js

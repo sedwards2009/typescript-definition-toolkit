@@ -202,7 +202,7 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
           result += " extends " + inter.extends.map( (e) => toString(e) ).join(", ");
         }
         
-        result += " {\n" + listToString(inter.members, level+1) + "}\n";
+        result += " {\n" + listToString(inter.members, level+1) + "\n" + dent + "}\n";
         return result;
         break;
         
