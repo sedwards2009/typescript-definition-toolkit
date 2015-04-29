@@ -27,7 +27,6 @@
   "devDependencies": {
     "nodeunit": "^0.9.1",
     "pegjs": "^0.8.0",
-    "tsd": "^0.5.7",
     "typescript": "^1.5.0-alpha"
   }
 }
