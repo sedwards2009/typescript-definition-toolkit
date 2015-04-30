@@ -399,3 +399,15 @@ export function testInterfaceNoLastSemi(test: nodeunit.Test): void {
   parseTest(test, `interface Foo {
   bar(): void}`);
 }
+
+export function testModuleWithInterfaces(test: nodeunit.Test): void {
+  parseTest(test, `declare module Foo {
+  export interface Bar {
+    fooIt(): void;
+  }
+  
+  export interface Baz {
+    bing(): void;
+  }
+}`);
+}
