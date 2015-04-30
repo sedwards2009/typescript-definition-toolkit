@@ -401,7 +401,7 @@ export function testInterfaceNoLastSemi(test: nodeunit.Test): void {
 }
 
 export function testModuleWithInterfaces(test: nodeunit.Test): void {
-  parseTest(test, `declare module Foo {
+  roundTrip(test, `declare module Foo {
   export interface Bar {
     fooIt(): void;
   }
@@ -411,3 +411,4 @@ export function testModuleWithInterfaces(test: nodeunit.Test): void {
   }
 }`);
 }
+

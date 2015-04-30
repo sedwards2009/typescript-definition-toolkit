@@ -747,7 +747,7 @@ ambient_enum_member
     }
 
 ambient_module_declaration
-    = MODULE _ name:type_name _ LBRACE _ members:ambient_module_body _ RBRACE
+    = MODULE _ name:type_name _ LBRACE members:ambient_module_body RBRACE
     {
       return {type: MODULE, name: name, members: members, ambient: true, external: false};
     }
@@ -770,7 +770,8 @@ ambient_module_element
     / ambient_enum_declaration
     / ambient_module_declaration
     / import_declaration
-    
+    / __
+
 /* Class */
 // class_declaration
 
