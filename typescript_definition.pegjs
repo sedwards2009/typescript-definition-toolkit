@@ -241,10 +241,10 @@ external_module_reference
     }
 
 interface_declaration
-    = INTERFACE __ name:Identifier typeParameters:(_ type_parameters)? extends_:(__ interface_extends_clause)? _ members:object_type
+    = INTERFACE __ name:Identifier typeParameters:(_ type_parameters)? extends_:(__ interface_extends_clause)? _ object_type:object_type
     {
       return {type: INTERFACE, name: name, typeParameters: typeParameters !== null ? typeParameters[1] : [],
-        extends: (extends_ === null ? [] : extends_[1]), members: members, export: false};
+        extends: (extends_ === null ? [] : extends_[1]), objectType: object_type, export: false};
     }
 
 interface_extends_clause
@@ -337,13 +337,17 @@ primary_type
       tr.name = tr.name + array;
       return tr;
     }
-    / object_type _ array:array_square?
+    / ot:object_type _ array:array_square
+    {
+//      ot.name = ot.name + array;
+      return ot;
+    }
 //    / array_type
-    / tupleType:tuple_type _ array:array_square?
+    / tupleType:tuple_type _ array:array_square
     {
       return tupleType;
     }
-    / type_query _ array:array_square?
+    / type_query _ array:array_square
 
 parenthesized_type
     = LBRACKET _ type:type _ RBRACKET
@@ -374,14 +378,14 @@ type_name
 object_type
     = LBRACE body:type_body RBRACE
     {
-      return body;
+      return { type: OBJECT_TYPE, members: body };
     }
     / LBRACE ws:_ RBRACE
     {
       if (ws.value !== "") {
-        return [ws];
+        return { type: OBJECT_TYPE, members: [ws] };
       } else {
-        return [];
+        return { type: OBJECT_TYPE, members: [] };
       }
     }
 
@@ -669,7 +673,7 @@ ambient_declaration
     }
 
 ambient_variable_declaration
-    = VAR _ name:Identifier type_annotation:type_annotation? _ SEMI
+    = VAR _ name:Identifier type_annotation:type_annotation? _ SEMI?
     {
       return {type: AMBIENT_VARIABLE, name:name, signature: type_annotation};
     }

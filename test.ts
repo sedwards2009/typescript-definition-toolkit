@@ -395,6 +395,22 @@ export function testAmbientEnum(test: nodeunit.Test): void {
 }`);
 }
 
+export function testAmbientVar2(test: nodeunit.Test): void {
+  roundTrip(test, `declare module Foo {
+  var smeg: {
+    blah: string;
+  };
+}`);
+}
+
+export function testShortAmbientVar(test: nodeunit.Test): void {
+  parseTest(test, `declare module Foo {
+  var smeg: {
+    blah: string
+  }
+}`);
+}
+
 export function testInterfaceNoLastSemi(test: nodeunit.Test): void {
   parseTest(test, `interface Foo {
   bar(): void}`);

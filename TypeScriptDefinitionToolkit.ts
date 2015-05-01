@@ -51,7 +51,7 @@ export module Defs {
     name: string;
     typeParameters: TypeParameter[];
     extends: ObjectTypeRef[];
-    members: Base[];
+    objectType: ObjectType;
     export: boolean;
   }
   
@@ -202,7 +202,7 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
           result += " extends " + inter.extends.map( (e) => toString(e) ).join(", ");
         }
         
-        result += " {\n" + listToString(inter.members, level+1) + "\n" + dent + "}\n";
+        result += " {\n" + listToString(inter.objectType.members, level+1) + "\n" + dent + "}\n";
         return result;
         break;
         
@@ -236,6 +236,8 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         break;
         
       case Defs.Type.OBJECT_TYPE:
+        let objType = <Defs.ObjectType> obj;
+        return "{" + listToString(objType.members, level+1, indent) + "}";
         break;
         
       case Defs.Type.OBJECT_TYPE_REF:
