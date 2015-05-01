@@ -290,7 +290,7 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
       case Defs.Type.AMBIENT_VARIABLE:
         let ambientVariable = <Defs.AmbientVariable> obj;
         return dent + "declare var " + ambientVariable.name +
-          (ambientVariable.signature === null ? "" : ": " + toString(ambientVariable.signature)) +  ";\n";
+          (ambientVariable.signature === null ? "" : ": " + toStringFunctionSignature(ambientVariable.signature)) +  ";\n";
         break;
         
       case Defs.Type.CLASS_DECLARATION:

@@ -283,6 +283,17 @@ export function testInterfaceIndex2(test: nodeunit.Test): void {
 }`);
 }
 
+export function testInterfaceFunctionType(test: nodeunit.Test): void {
+  roundTrip(test, `export interface Baz {
+  bar: (e) => any;
+}`);
+}
+
+export function testVarFunctionType(test: nodeunit.Test): void {
+  roundTrip(test, `declare var bar: (e) => any;`);
+}
+
+
 export function testTypeAlias(test: nodeunit.Test): void {
   roundTrip(test, `type foo = bar;`);
 }

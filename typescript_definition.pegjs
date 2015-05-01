@@ -324,7 +324,7 @@ primary_or_union_type
     / union_type
 
 primary_type
-    = name:parenthesized_type _ array:array_square
+    = name:parenthesized_type _ array:array_square !(_ ARROW) /* A parenthesized looks very similar to the start of function signature */
     {
       return { type: OBJECT_TYPE_REF, name: name + array };
     }
