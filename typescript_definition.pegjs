@@ -374,7 +374,7 @@ object_type
     }
 
 type_body
-    = firstws:_ first:type_member _ rest:(SEMI _ type_body_member)* _ SEMI? lastws:_
+    = firstws:_ first:type_member _ rest:(SEMI? _ type_body_member)* _ SEMI? lastws:_
     {
       var result = [];
       if (firstws.value !== "") {
@@ -404,9 +404,6 @@ type_body_member
     {
       return ws;
     }
-    
-type_member_list
-    = (type_member _)+ SEMI
 
 type_member
     = signature:call_signature

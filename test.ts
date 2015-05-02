@@ -442,6 +442,15 @@ export function testShortAmbientVar(test: nodeunit.Test): void {
 }`);
 }
 
+export function testMissingSemi(test: nodeunit.Test): void {
+  parseTest(test, `interface Foo {
+  smeg: {
+      foz: number;
+  }
+  bar: string;
+}`);
+}
+
 export function testInterfaceNoLastSemi(test: nodeunit.Test): void {
   parseTest(test, `interface Foo {
   bar(): void}`);
