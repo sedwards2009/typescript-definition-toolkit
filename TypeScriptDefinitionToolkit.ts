@@ -27,7 +27,8 @@ export module Defs {
     CLASS_DECLARATION = 16,
     AMBIENT_VARIABLE = 17,
     ENUM = 18,
-    ENUM_MEMBER = 19
+    ENUM_MEMBER = 19,
+    UNION_TYPE = 20
   }
   
   export interface Base {
@@ -94,6 +95,10 @@ export module Defs {
   }
   
   export interface TupleType extends PrimaryType {
+    members: PrimaryType[];
+  }
+  
+  export interface UnionType extends PrimaryType {
     members: PrimaryType[];
   }
   
@@ -282,6 +287,11 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         return "[" + tuple.members.map( (t) => toString(t, level+1, indent) ).join(", ") + "]";
         break;
         
+      case Defs.Type.UNION_TYPE:
+        let union = <Defs.UnionType> obj;
+        return union.members.map( (m) => toString(m) ).join("|");
+        break;
+          
       case Defs.Type.EXPORT_ASSIGNMENT:
         let exportAssign = <Defs.ExportAssignment> obj;
         return dent + "export = " + exportAssign.name + ";\n";

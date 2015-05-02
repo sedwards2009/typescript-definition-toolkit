@@ -21,6 +21,7 @@ var CLASS_DECLARATION = 16;
 var AMBIENT_VARIABLE = 17;
 var ENUM = 18;
 var ENUM_MEMBER = 19;
+var UNION_TYPE = 20;
 
 }
 
@@ -320,8 +321,8 @@ type
     / constructor_type
 
 primary_or_union_type
-    = primary_type
-    / union_type
+    = union_type
+    / primary_type
 
 primary_type
     = name:parenthesized_type _ array:array_square !(_ ARROW) /* A parenthesized looks very similar to the start of function signature */
@@ -466,7 +467,17 @@ tuple_element_types
     }
 
 union_type
-    = primary_type PIPE primary_or_union_type
+    = head:primary_type PIPE rest:primary_or_union_type
+    {
+      var members = [];
+      members.push(head);
+      if (rest.type === UNION_TYPE) {
+        members = members.concat(rest.members);
+      } else {
+        members.push(rest);
+      }
+      return {type: UNION_TYPE, members: members };
+    }
 
 function_type
     = typeParameters:type_parameters? _ LBRACKET _ parameterList:parameter_list? _ RBRACKET _ ARROW _ type:type
