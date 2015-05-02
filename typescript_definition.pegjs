@@ -84,15 +84,9 @@ FUNCTION = "function"
 
 TYPEOF = "typeof"
 
-ANY = "any"
-
 NUMBER = "number"
 
-BOOLEAN = "boolean"
-
 STRING = "string"
-
-VOID = "void"
 
 NEW = "new"
 
@@ -329,10 +323,6 @@ primary_type
     {
       return { type: OBJECT_TYPE_REF, name: name + array, typeArguments: null };
     }
-    / name:predefined_type _ array:array_square
-    {
-      return { type: OBJECT_TYPE_REF, name: name + array, typeArguments: null };
-    }
     / tr:type_reference _ array:array_square
     {
       tr.name = tr.name + array;
@@ -355,13 +345,6 @@ parenthesized_type
     {
       return type;
     }
-    
-predefined_type
-    = ANY
-    / NUMBER
-    / BOOLEAN
-    / STRING
-    / VOID
 
 type_reference
     = name:type_name _ ta:type_arguments

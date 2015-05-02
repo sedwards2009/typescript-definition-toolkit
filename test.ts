@@ -314,6 +314,10 @@ export function testTypeAliasInModule(test: nodeunit.Test): void {
 }`);
 }
 
+export function testBuiltinTypeNameCollision(test: nodeunit.Test): void {
+  roundTrip(test, `declare var foo: strings;`);
+}
+
 export function testImportDeclaration(test: nodeunit.Test): void {
   roundTrip(test, `import foo = bar;`);
 }
@@ -455,3 +459,14 @@ export function testModuleWithInterfaces(test: nodeunit.Test): void {
 }`);
 }
 
+// const defs = toolkit.parse(`declare module Foo {
+// export interface Bar {
+//   fooIt(): void;
+// }
+// 
+// export interface Baz {
+//   bing(): void;
+// }
+// }`);
+// console.log(JSON.stringify(defs));
+// console.log(toolkit.listToString(defs));
