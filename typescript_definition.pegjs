@@ -447,7 +447,7 @@ tuple_element_types
     }
 
 union_type
-    = head:primary_type PIPE rest:primary_or_union_type
+    = head:primary_type _ PIPE _ rest:primary_or_union_type
     {
       var members = [];
       members.push(head);

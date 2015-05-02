@@ -457,6 +457,14 @@ export function testMissingSemiInModule(test: nodeunit.Test): void {
 }`);
 }
 
+export function testCallSignature(test: nodeunit.Test): void {
+  parseTest(test, `declare var smeg: { ():string; };`);
+}
+
+export function testUnionWithSpaces(test: nodeunit.Test): void {
+  parseTest(test, `declare var bar: string | number;}`);
+}
+
 export function testInterfaceNoLastSemi(test: nodeunit.Test): void {
   parseTest(test, `interface Foo {
   bar(): void}`);
