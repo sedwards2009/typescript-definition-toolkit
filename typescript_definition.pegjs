@@ -778,6 +778,7 @@ ambient_module_element
     / EXPORT __ result:ambient_enum_declaration { result.export = true; return result; }
     / EXPORT __ result:ambient_module_declaration { result.export = true; return result; }
     / EXPORT __ result:import_declaration { result.export = true; return result; }
+    / EXPORT __ result:type_alias_declaration { result.export = true; return result; }
     / ambient_variable_declaration
     / ambient_function_declaration
     / ambient_class_declaration
@@ -785,6 +786,7 @@ ambient_module_element
     / ambient_enum_declaration
     / ambient_module_declaration
     / import_declaration
+    / type_alias_declaration
     / __
 
 /* Class */

@@ -302,6 +302,12 @@ export function testTypeAlias2(test: nodeunit.Test): void {
   roundTrip(test, `type strings = string|string[];`);
 }
 
+export function testTypeAliasInModule(test: nodeunit.Test): void {
+  roundTrip(test, `declare module "foo" {
+  type strings = string|string[];
+}`);
+}
+
 export function testImportDeclaration(test: nodeunit.Test): void {
   roundTrip(test, `import foo = bar;`);
 }
