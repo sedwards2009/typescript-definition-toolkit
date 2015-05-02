@@ -670,7 +670,7 @@ ambient_variable_declaration
     }
 
 ambient_function_declaration
-    = FUNCTION __ name:Identifier _ signature:call_signature _ SEMI
+    = FUNCTION __ name:Identifier _ signature:call_signature _ SEMI?
         {
         return {type: FUNCTION, name: name, signature: signature, ambient: false};
         }

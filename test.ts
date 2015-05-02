@@ -451,6 +451,12 @@ export function testMissingSemi(test: nodeunit.Test): void {
 }`);
 }
 
+export function testMissingSemiInModule(test: nodeunit.Test): void {
+  parseTest(test, `declare module Foo {
+  function bar(): smeg
+}`);
+}
+
 export function testInterfaceNoLastSemi(test: nodeunit.Test): void {
   parseTest(test, `interface Foo {
   bar(): void}`);
