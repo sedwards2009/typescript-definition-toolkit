@@ -31,7 +31,7 @@ start
       return result;
     }
                  
-_ "WhiteSpace" = value:([ \t\r\n]*) comment_list:(comment [ \t\r\n]*)*
+_ "WhiteSpace" = value:([ \t\r\n\u00A0\uFEFF]*) comment_list:(comment [ \t\r\n\u00A0\uFEFF]*)*
     {
       var result = "";
       result += value.join("");
@@ -44,7 +44,7 @@ _ "WhiteSpace" = value:([ \t\r\n]*) comment_list:(comment [ \t\r\n]*)*
       return { type: WHITESPACE, value: result };
     }
 
-__ "MandatoryWhiteSpace" = front:[ \t\r\n]? comment_list:(comment [ \t\r\n]*)+
+__ "MandatoryWhiteSpace" = front:[ \t\r\n\u00A0\uFEFF]? comment_list:(comment [ \t\r\n\u00A0\uFEFF]*)+
     {
       var value = "";
       if (front !== null) {
