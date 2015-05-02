@@ -47,8 +47,8 @@ _ "WhiteSpace" = value:([ \t\r\n\u00A0\uFEFF]*) comment_list:(comment [ \t\r\n\u
 __ "MandatoryWhiteSpace" = front:[ \t\r\n\u00A0\uFEFF]? comment_list:(comment [ \t\r\n\u00A0\uFEFF]*)+
     {
       var value = "";
-      if (front !== null) {
-        value += front.join("");
+      if (front !== null && front !== undefined) {
+        value += front;
       }
       
       if (comment_list !== null) {
