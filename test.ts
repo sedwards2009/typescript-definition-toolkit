@@ -289,6 +289,12 @@ export function testInterfaceFunctionType(test: nodeunit.Test): void {
 }`);
 }
 
+export function testInterfaceGenerics(test: nodeunit.Test): void {
+  roundTrip(test, `export interface Baz {
+  baz: () => Promise<Candy>;
+}`);
+}
+
 export function testVarFunctionType(test: nodeunit.Test): void {
   roundTrip(test, `declare var bar: (e) => any;`);
 }

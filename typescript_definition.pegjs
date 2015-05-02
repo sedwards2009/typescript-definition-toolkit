@@ -327,11 +327,11 @@ primary_or_union_type
 primary_type
     = name:parenthesized_type _ array:array_square !(_ ARROW) /* A parenthesized looks very similar to the start of function signature */
     {
-      return { type: OBJECT_TYPE_REF, name: name + array };
+      return { type: OBJECT_TYPE_REF, name: name + array, typeArguments: null };
     }
     / name:predefined_type _ array:array_square
     {
-      return { type: OBJECT_TYPE_REF, name: name + array };
+      return { type: OBJECT_TYPE_REF, name: name + array, typeArguments: null };
     }
     / tr:type_reference _ array:array_square
     {
@@ -366,11 +366,11 @@ predefined_type
 type_reference
     = name:type_name _ ta:type_arguments
     {
-      return { type: OBJECT_TYPE_REF, name: name };
+      return { type: OBJECT_TYPE_REF, name: name, typeArguments: ta };
     }
     / name:type_name
     {
-      return { type: OBJECT_TYPE_REF, name: name };
+      return { type: OBJECT_TYPE_REF, name: name, typeArguments: null };
     }
 
 type_name
@@ -615,7 +615,7 @@ index_signature
     {
       return { type: INDEX_METHOD,
         index: { type: PARAMETER, name: index_name, accessibility: null, required: true, rest: false,
-          parameterType: { type: OBJECT_TYPE_REF, name: index_type }, initialiser: null},
+          parameterType: { type: OBJECT_TYPE_REF, name: index_type, typeArguments: null }, initialiser: null},
         returnType: returnType };
     }
 

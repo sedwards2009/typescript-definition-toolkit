@@ -92,6 +92,7 @@ export module Defs {
   
   export interface ObjectTypeRef extends PrimaryType {
     name: string;
+    typeArguments: PrimaryType[];
   }
   
   export interface TupleType extends PrimaryType {
@@ -247,7 +248,13 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         
       case Defs.Type.OBJECT_TYPE_REF:
         let objTypeRef = <Defs.ObjectTypeRef> obj;
-        return objTypeRef.name;
+        result = objTypeRef.name;
+        if (objTypeRef.typeArguments !== null && objTypeRef.typeArguments.length !== 0) {
+          result += "<";
+          result += objTypeRef.typeArguments.map( (a) => toString(a) ).join(",");
+          result += ">";
+        }
+        return result;
         break;
         
       case Defs.Type.IMPORT_DECLARATION:
