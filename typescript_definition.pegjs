@@ -22,6 +22,7 @@ var AMBIENT_VARIABLE = 17;
 var ENUM = 18;
 var ENUM_MEMBER = 19;
 var UNION_TYPE = 20;
+var SPECIALIZED_SIGNATURE = 21;
 
 }
 
@@ -532,14 +533,16 @@ required_parameter_list
     }
 
 required_parameter
-    = accessibility:accessibility_modifier? _ name:Identifier _ type:type_annotation? ![?]  // <- Don't om nom part of an optional parameter.
-      {
-        return {type: PARAMETER, name: name, accessibility: accessibility, required: true, initialiser: null, rest: false, parameterType: type};
-      }
-    / name:Identifier _ COLON _ StringLiteral
-      {
-        return {type: PARAMETER, name: name, accessibility: null, required: true, initialiser: null, rest: false, parameterType: null };
-      }
+    = name:Identifier _ COLON _ str:StringLiteral
+    {
+      return {type: PARAMETER, name: name, accessibility: null, required: true, initialiser: null, rest: false,
+        parameterType: {type: SPECIALIZED_SIGNATURE, value: str} };
+    }
+    / accessibility:accessibility_modifier? _ name:Identifier _ type:type_annotation? ![?]  // <- Don't om nom part of an optional parameter.
+    {
+      return {type: PARAMETER, name: name, accessibility: accessibility, required: true, initialiser: null,
+        rest: false, parameterType: type};
+    }
 
 
 accessibility_modifier

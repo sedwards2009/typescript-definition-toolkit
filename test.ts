@@ -157,6 +157,10 @@ export function testStringLiteralName(test: nodeunit.Test): void {
     }`);
 }
 
+export function testParameterStringMatch(test: nodeunit.Test): void {
+  roundTrip(test, `declare function foo(bar: "smeg"): string;`);
+}
+
 export function testTuple(test: nodeunit.Test): void {
   roundTrip(test, `
     export interface Baz {
@@ -468,7 +472,7 @@ export function testCallSignature(test: nodeunit.Test): void {
 }
 
 export function testUnionWithSpaces(test: nodeunit.Test): void {
-  parseTest(test, `declare var bar: string | number;}`);
+  parseTest(test, `declare var bar: string | number;`);
 }
 
 export function testInterfaceNoLastSemi(test: nodeunit.Test): void {

@@ -28,7 +28,8 @@ export module Defs {
     AMBIENT_VARIABLE = 17,
     ENUM = 18,
     ENUM_MEMBER = 19,
-    UNION_TYPE = 20
+    UNION_TYPE = 20,
+    SPECIALIZED_SIGNATURE = 21
   }
   
   export interface Base {
@@ -74,7 +75,7 @@ export module Defs {
     required: boolean;
     rest: boolean;
     initialiser: string;
-    parameterType: PrimaryType;
+    parameterType: PrimaryType | SpecializedSignature;
   }
   
   export interface TypeParameter extends Base {
@@ -82,6 +83,10 @@ export module Defs {
     extends: PrimaryType;
   }
   
+  export interface SpecializedSignature extends Base {
+    value: string;
+  } 
+
   // -- Types
   export interface PrimaryType extends Base {
   }
@@ -345,6 +350,11 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         return result;
         break;
         
+      case Defs.Type.SPECIALIZED_SIGNATURE:
+        let specicalizedSignature = <Defs.SpecializedSignature> obj;
+        return '"' + specicalizedSignature.value + '"';
+        break;
+
   }
   return "";
 }
