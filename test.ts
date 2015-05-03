@@ -442,6 +442,42 @@ export function testAmbientClassGenerics(test: nodeunit.Test): void {
 }`);
 }
 
+export function testClassMethodPublic(test: nodeunit.Test): void {
+  roundTrip(test, `declare class Baz {
+  public bop(): void;
+}`);
+}
+
+export function testClassMethodProtected(test: nodeunit.Test): void {
+  roundTrip(test, `declare class Baz {
+  protected bop(): void;
+}`);
+}
+
+export function testClassMethodPrivate(test: nodeunit.Test): void {
+  roundTrip(test, `declare class Baz {
+  private bop(): void;
+}`);
+}
+
+export function testClassPropertyPublic(test: nodeunit.Test): void {
+  roundTrip(test, `declare class Baz {
+  public bop: string;
+}`);
+}
+
+export function testClassPropertyProtected(test: nodeunit.Test): void {
+  roundTrip(test, `declare class Baz {
+  protected bop: string;
+}`);
+}
+
+export function testClassPropertyPrivate(test: nodeunit.Test): void {
+  roundTrip(test, `declare class Baz {
+  private bop: string;
+}`);
+}
+
 export function testAmbientEnum(test: nodeunit.Test): void {
   roundTrip(test, `declare enum Colors {
   RED = 0,

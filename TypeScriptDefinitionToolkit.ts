@@ -128,6 +128,7 @@ export module Defs {
     optional: boolean;
     signature: FunctionType;
     static: boolean;
+    access: string;
   }
   
   export interface Property extends Base {
@@ -280,13 +281,25 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         
       case Defs.Type.METHOD:
         let method = <Defs.Method> obj;
-        return dent + (method.static ? "static " : "") + method.name + (method.optional ? "?" :"") + toString(method.signature) + ";";
+        result = dent;
+        result += method.access !== null ? method.access + " " : "";
+        result += method.static ? "static " : "";
+        result += method.name;
+        result += method.optional ? "?" :"";
+        result += toString(method.signature);
+        result += ";";
+        return result;
         break;
         
       case Defs.Type.PROPERTY:
         let prop = <Defs.Property> obj;
-        return dent + prop.name + (prop.optional ? "?" : "") + (prop.signature === null ? "" : ": " +
-          toStringFunctionSignature(prop.signature)) + ";";
+        result = dent;
+        result += prop.access !== null ? prop.access + " " : "";
+        result += prop.name;
+        result += prop.optional ? "?" : "";
+        result += prop.signature === null ? "" : ": " + toStringFunctionSignature(prop.signature);
+        result += ";";
+        return result;
         break;
         
       case Defs.Type.TYPE_ALIAS:

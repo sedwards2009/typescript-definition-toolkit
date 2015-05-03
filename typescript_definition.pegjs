@@ -414,7 +414,7 @@ type_body_member
 type_member
     = signature:call_signature
     {
-      return {type: METHOD, name: "", optional: false, signature: signature, static: false, };
+      return {type: METHOD, name: "", optional: false, signature: signature, static: false, access: null};
     }
     / construct_signature
     / index_signature
@@ -597,7 +597,7 @@ rest_parameter
 construct_signature
     = NEW _ type_parameters:type_parameters? _ LBRACKET _ parameters:parameter_list? _ RBRACKET _ type_annotation:type_annotation?
     {
-      return { type: METHOD, name: "new", optional: false, static: false, 
+      return { type: METHOD, name: "new", optional: false, static: false, access: null,
         signature:  {type: FUNCTION_TYPE, typeParameters: type_parameters, parameters: parameters || [], returnType: type_annotation } };
     }
 
@@ -613,7 +613,7 @@ index_signature
 method_signature
     = name:property_name qm:QUESTIONMARK? signature:call_signature
     {
-      return { type: METHOD, name:name, optional: qm!==null, static: false, signature: signature };
+      return { type: METHOD, name:name, optional: qm!==null, static: false, signature: signature, access: null };
     }
 
 type_alias_declaration
@@ -722,9 +722,10 @@ ambient_property_member_declaration
       return {type: PROPERTY, name: name, access: (access !== null ? access[0] : null), static: static!==null,
         optional: false, signature: type_annotation };
     }
-    / (accessibility_modifier? __) static:(STATIC __)? name:property_name _ signature:call_signature _ SEMI
+    / access:(accessibility_modifier? __) static:(STATIC __)? name:property_name _ signature:call_signature _ SEMI
     {
-      return {type: METHOD, name: name, static: static !== null, optional: false, signature: signature};
+      return {type: METHOD, name: name, access: (access !== null ? access[0] : null), static: static !== null,
+        optional: false, signature: signature};
     }
 
 ambient_enum_declaration
