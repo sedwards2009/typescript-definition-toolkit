@@ -478,6 +478,12 @@ export function testClassPropertyPrivate(test: nodeunit.Test): void {
 }`);
 }
 
+export function testClassConstructor(test: nodeunit.Test): void {
+  roundTrip(test, `declare class Baz {
+    constructor();
+}`);
+}
+
 export function testAmbientEnum(test: nodeunit.Test): void {
   roundTrip(test, `declare enum Colors {
   RED = 0,

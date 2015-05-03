@@ -136,8 +136,6 @@ INTERFACE = "interface"
 
 CLASS = "class"
 
-CONSTRUCTOR = "constructor"
-
 EXTENDS = "extends"
 
 VAR = "var"
@@ -701,8 +699,7 @@ ambient_class_body_elements
     = ambient_class_body_element*
 
 ambient_class_body_element
-    = ambient_constructor_declaration
-    / prop:ambient_property_member_declaration
+    = prop:ambient_property_member_declaration
     {
       return prop;
     }
@@ -711,10 +708,6 @@ ambient_class_body_element
     {
       return ws;
     }
-
-ambient_constructor_declaration
-    = CONSTRUCTOR _ LBRACKET _ parameter_list _ RBRACKET _ SEMI
-    / CONSTRUCTOR _ LBRACKET _ RBRACKET _ SEMI
 
 ambient_property_member_declaration
     = access:(accessibility_modifier? __) static:(STATIC __)? name:property_name _ type_annotation:type_annotation _ SEMI
