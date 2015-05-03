@@ -330,6 +330,11 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         result = dent;
         result += classDec.ambient ? "declare " : "";
         result += "class " + classDec.name;
+
+        if (classDec.typeParameters !== null && classDec.typeParameters.length !== 0) {
+          result += "<" + listToString(classDec.typeParameters) + ">";
+        }
+
         if (classDec.extends !== null) {
           result += " extends " + toString(classDec.extends);
         }

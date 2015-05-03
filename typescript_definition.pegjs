@@ -286,7 +286,7 @@ type_parameter
     }
 
 constraint
-    = EXTENDS type:type
+    = __ EXTENDS __ type:type
     {
       return type;
     }
