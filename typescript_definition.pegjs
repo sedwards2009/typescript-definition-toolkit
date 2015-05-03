@@ -482,7 +482,10 @@ property_signature
 
 property_name
     = Identifier
-    / StringLiteral
+    / str:StringLiteral
+    {
+      return '"' + str + '"';
+    }
     / Numeric
 
 call_signature

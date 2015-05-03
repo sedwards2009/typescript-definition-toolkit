@@ -151,6 +151,12 @@ export function testInterface4(test: nodeunit.Test): void {
 `);
 }
 
+export function testStringLiteralName(test: nodeunit.Test): void {
+  roundTrip(test, `export interface Baz {
+    	"Funny name": string;
+    }`);
+}
+
 export function testTuple(test: nodeunit.Test): void {
   roundTrip(test, `
     export interface Baz {
