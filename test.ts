@@ -467,6 +467,12 @@ export function testMissingSemiInModule(test: nodeunit.Test): void {
 }`);
 }
 
+export function testMissingSemiInModule2(test: nodeunit.Test): void {
+  parseTest(test, `declare module "asciify" {
+    export = asciify
+}`);
+}
+
 export function testCallSignature(test: nodeunit.Test): void {
   parseTest(test, `declare var smeg: { ():string; };`);
 }

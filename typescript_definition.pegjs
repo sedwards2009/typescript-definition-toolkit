@@ -190,7 +190,7 @@ declaration_element
     }
     
 export_assignment
-    = EXPORT _ EQUALS _ name:Identifier _ SEMI
+    = EXPORT _ EQUALS _ name:Identifier _ SEMI?
     {
       return {type: EXPORT_ASSIGNMENT, name: name };
     }
