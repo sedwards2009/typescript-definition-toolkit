@@ -328,6 +328,10 @@ export function testBuiltinTypeNameCollision(test: nodeunit.Test): void {
   roundTrip(test, `declare var foo: strings;`);
 }
 
+export function testTypeOfVar(test: nodeunit.Test): void {
+  roundTrip(test, `declare var $: typeof spaceProng.$;`);
+}
+
 export function testImportDeclaration(test: nodeunit.Test): void {
   roundTrip(test, `import foo = bar;`);
 }

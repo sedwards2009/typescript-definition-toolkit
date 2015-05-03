@@ -29,7 +29,8 @@ export module Defs {
     ENUM = 18,
     ENUM_MEMBER = 19,
     UNION_TYPE = 20,
-    SPECIALIZED_SIGNATURE = 21
+    SPECIALIZED_SIGNATURE = 21,
+    TYPE_QUERY = 22
   }
   
   export interface Base {
@@ -106,6 +107,10 @@ export module Defs {
   
   export interface UnionType extends PrimaryType {
     members: PrimaryType[];
+  }
+  
+  export interface TypeQuery extends PrimaryType {
+    value: string;
   }
   
   // FIXME add an array type??
@@ -260,6 +265,11 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
           result += ">";
         }
         return result;
+        break;
+        
+      case Defs.Type.TYPE_QUERY:
+        let typeQuery = <Defs.TypeQuery> obj;
+        return "typeof " + typeQuery.value;
         break;
         
       case Defs.Type.IMPORT_DECLARATION:

@@ -23,6 +23,7 @@ var ENUM = 18;
 var ENUM_MEMBER = 19;
 var UNION_TYPE = 20;
 var SPECIALIZED_SIGNATURE = 21;
+var TYPE_QUERY = 22;
 
 }
 
@@ -182,8 +183,8 @@ declaration_element
     }
     / ambient_declaration
     / EXPORT ambient_declaration
-    / external_import_declaration /* FIXME */
-    / EXPORT external_import_declaration /* FIXME */
+    / external_import_declaration
+    / EXPORT external_import_declaration
     / ws:__
     {
       return ws;
@@ -320,7 +321,12 @@ primary_or_union_type
     / primary_type
 
 primary_type
-    = name:parenthesized_type _ array:array_square !(_ ARROW) /* A parenthesized looks very similar to the start of function signature */
+    = tq:type_query _ array:array_square
+    {
+      tq.name = tq.name + array;
+      return tq;
+    }
+    / name:parenthesized_type _ array:array_square !(_ ARROW) /* A parenthesized looks very similar to the start of function signature */
     {
       return { type: OBJECT_TYPE_REF, name: name + array, typeArguments: null };
     }
@@ -339,7 +345,6 @@ primary_type
     {
       return tupleType;
     }
-    / type_query _ array:array_square
 
 parenthesized_type
     = LBRACKET _ type:type _ RBRACKET
@@ -470,10 +475,10 @@ constructor_type
     = NEW _ type_parameters? _ LBRACKET _ parameter_list? _ RBRACKET _ ARROW _ type
 
 type_query
-    = TYPEOF __ type_query_expression
-    
-type_query_expression
-    = Identifier (DOT Identifier)*
+    = TYPEOF __ name:type_name
+    {
+      return {type: TYPE_QUERY, value: name};
+    }
 
 property_signature
     = name:property_name qm:QUESTIONMARK? _ type_annotation:type_annotation?
