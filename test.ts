@@ -460,6 +460,12 @@ export function testClassMethodPrivate(test: nodeunit.Test): void {
 }`);
 }
 
+export function testAmbientClassWithPrivate(test: nodeunit.Test): void {
+  roundTrip(test, `declare class Bar {
+    private foo;
+}`);
+}
+
 export function testClassPropertyPublic(test: nodeunit.Test): void {
   roundTrip(test, `declare class Baz {
   public bop: string;

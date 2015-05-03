@@ -710,10 +710,10 @@ ambient_class_body_element
     }
 
 ambient_property_member_declaration
-    = access:(accessibility_modifier? __) static:(STATIC __)? name:property_name _ type_annotation:type_annotation _ SEMI
+    = access:(accessibility_modifier? __) static:(STATIC __)? name:property_name _ type_annotation:type_annotation? _ SEMI
     {
       return {type: PROPERTY, name: name, access: (access !== null ? access[0] : null), static: static!==null,
-        optional: false, signature: type_annotation };
+        optional: false, signature: type_annotation === undefined ? null : type_annotation };
     }
     / access:(accessibility_modifier? __) static:(STATIC __)? name:property_name _ signature:call_signature _ SEMI
     {
