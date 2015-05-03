@@ -687,11 +687,11 @@ ambient_function_declaration
         }
 
 ambient_class_declaration
-    = CLASS __ name:Identifier _ type_parameters:type_parameters? _  extends_:(EXTENDS __ class_type)? impls:(IMPLEMENTS __ class_or_interface_type_list)? _ LBRACE members:ambient_class_body RBRACE
+    = CLASS __ name:Identifier _ type_parameters:type_parameters? _  extends_:(EXTENDS __ class_type)? impls:(_ IMPLEMENTS __ class_or_interface_type_list)? _ LBRACE members:ambient_class_body RBRACE
     {
       return {type: CLASS_DECLARATION, name: name, typeParameters: type_parameters, members: members, ambient: false,
         extends: extends_ === null || extends_ === undefined ? null : extends_[2],
-        implements: impls === null || impls === undefined ? [] : impls[2]};
+        implements: impls === null || impls === undefined ? [] : impls[3]};
     }
 
 ambient_class_body

@@ -432,6 +432,11 @@ export function testAmbientClassImplements(test: nodeunit.Test): void {
 `);
 }
 
+export function testAmbientClassExtendsImplements(test: nodeunit.Test): void {
+  roundTrip(test, `declare class Foobar extends FooBase implements IFoo {
+}`);
+}
+
 export function testAmbientEnum(test: nodeunit.Test): void {
   roundTrip(test, `declare enum Colors {
   RED = 0,
