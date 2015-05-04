@@ -506,6 +506,14 @@ export function testAmbientEnum(test: nodeunit.Test): void {
 }`);
 }
 
+export function testEnumTrailingComma(test: nodeunit.Test): void {
+  roundTrip(test, `declare enum Colors {
+  RED = 0,
+  GREEN = 1,
+  BLUE = 2,
+}`);
+}
+
 export function testAmbientVar2(test: nodeunit.Test): void {
   roundTrip(test, `declare module Foo {
   var smeg: {

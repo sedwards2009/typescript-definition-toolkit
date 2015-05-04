@@ -754,7 +754,7 @@ ambient_property_member_declaration
 
 
 ambient_enum_declaration
-    = ENUM _ name:Identifier _ LBRACE _ member:ambient_enum_member rest_members:(_ COMMA _ ambient_enum_member)* _ RBRACE
+    = ENUM _ name:Identifier _ LBRACE _ member:ambient_enum_member rest_members:(_ COMMA _ ambient_enum_member)* _ COMMA? _ RBRACE
     {
       var memberList = [];
       memberList.push(member);
