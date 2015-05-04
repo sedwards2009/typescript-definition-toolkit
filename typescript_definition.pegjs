@@ -64,6 +64,21 @@ __ "MandatoryWhiteSpace" = front:[ \t\r\n\u00A0\uFEFF]? comment_list:(comment [ 
       return { type: WHITESPACE, value: value.join("") };
     }
 
+_NoEOL_ "WhiteSpace with no EOL"
+    = value:([ \t\uFEFF]*) comment_list:(comment [ \t\uFEFF]*)*
+    {
+      var result = "";
+      result += value.join("");
+      if (comment_list !== null) {
+        comment_list.forEach( function(tup) {
+          result += tup[0];
+          result += tup[1].join("");
+        });
+      }
+      return { type: WHITESPACE, value: result };
+    }
+    
+
 comment
     = SingleLineComment
     / MultiLineComment
@@ -73,6 +88,17 @@ SingleLineComment
     
 MultiLineComment
     = $("/*" (!"*/" .)* "*/")
+
+LineTerminatorSequence
+  = "\n"
+  / "\r\n"
+  / "\r"
+  / "\u2028"
+  / "\u2029"
+
+EOS
+  = SEMI
+  / LineTerminatorSequence
 
 IMPORT = "import"
 
@@ -319,27 +345,27 @@ primary_or_union_type
     / primary_type
 
 primary_type
-    = tq:type_query _ array:array_square
+    = tq:type_query array:array_square
     {
       tq.name = tq.name + array;
       return tq;
     }
-    / name:parenthesized_type _ array:array_square !(_ ARROW) /* A parenthesized looks very similar to the start of function signature */
+    / name:parenthesized_type array:array_square !(_ ARROW) /* A parenthesized looks very similar to the start of function signature */
     {
       return { type: OBJECT_TYPE_REF, name: name + array, typeArguments: null };
     }
-    / tr:type_reference _ array:array_square
+    / tr:type_reference array:array_square
     {
       tr.name = tr.name + array;
       return tr;
     }
-    / ot:object_type _ array:array_square
+    / ot:object_type array:array_square
     {
 //      ot.name = ot.name + array;
       return ot;
     }
 //    / array_type
-    / tupleType:tuple_type _ array:array_square
+    / tupleType:tuple_type array:array_square
     {
       return tupleType;
     }
@@ -378,7 +404,7 @@ object_type
     }
 
 type_body
-    = firstws:_ first:type_member _ rest:(SEMI? _ type_body_member)* _ SEMI? lastws:_
+    = firstws:_ first:type_member _ rest:(SEMI? _ type_body_member _)* _ SEMI? lastws:_
     {
       var result = [];
       if (firstws.value !== "") {
@@ -423,7 +449,7 @@ type_member
 //array_type
 //    = primary_type LSQUARE RSQUARE
     
-array_square = squares:(LSQUARE RSQUARE)*
+array_square = squares:(_ LSQUARE RSQUARE)*
     {
       var result = "";
       var i;
@@ -720,6 +746,12 @@ ambient_property_member_declaration
       return {type: METHOD, name: name, access: (access !== null ? access[0] : null), static: static !== null,
         optional: false, signature: signature};
     }
+    / access:(accessibility_modifier? __) static:(STATIC __)? name:property_name type_annotation:(_ type_annotation)? _NoEOL_ LineTerminatorSequence
+    {
+      return {type: PROPERTY, name: name, access: (access !== null ? access[0] : null), static: static!==null,
+        optional: false, signature: type_annotation === undefined ? null : type_annotation[1] };
+    }
+
 
 ambient_enum_declaration
     = ENUM _ name:Identifier _ LBRACE _ member:ambient_enum_member rest_members:(_ COMMA _ ambient_enum_member)* _ RBRACE

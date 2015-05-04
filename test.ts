@@ -299,6 +299,14 @@ export function testInterfaceFunctionType(test: nodeunit.Test): void {
 }`);
 }
 
+export function testInterfaceNestedCallSignature(test: nodeunit.Test): void {
+  roundTrip(test, `export interface Baz {
+  getCredentials?: (callback: (err?: any) => void) => void ;
+  loadFromPath?: (path: string) => void;
+}
+`);
+}
+
 export function testInterfaceGenerics(test: nodeunit.Test): void {
   roundTrip(test, `export interface Baz {
   baz: () => Promise<Candy>;
@@ -511,6 +519,13 @@ export function testShortAmbientVar(test: nodeunit.Test): void {
   var smeg: {
     blah: string
   }
+}`);
+}
+
+export function testClassWithMissingSemi(test: nodeunit.Test): void {
+  parseTest(test, `declare class Foo {
+  bar: boolean
+  constructor(flob: string);
 }`);
 }
 
