@@ -70,6 +70,10 @@ export function testComment(test: nodeunit.Test): void {
 `);
 }
 
+export function testCommentNoTrailingCR(test: nodeunit.Test): void {
+  roundTrip(test, `// A line comment`);
+}
+
 export function test2Comment(test: nodeunit.Test): void {
   roundTrip(test, `// A line comment 1
 

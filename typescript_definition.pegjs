@@ -84,7 +84,7 @@ comment
     / MultiLineComment
 
 SingleLineComment
-    = $("//" [^\x0d\x0a]* [\x0d\x0a])
+    = $("//" [^\x0d\x0a]* [\x0d\x0a]?)
 
 SingleLineCommentNoEOL
     = $("//" [^\x0d\x0a]*)
