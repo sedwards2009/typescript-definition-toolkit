@@ -65,7 +65,7 @@ __ "MandatoryWhiteSpace" = front:[ \t\r\n\u00A0\uFEFF]? comment_list:(comment [ 
     }
 
 _NoEOL_ "WhiteSpace with no EOL"
-    = value:([ \t\uFEFF]*) comment_list:(comment [ \t\uFEFF]*)*
+    = value:([ \t\uFEFF]*) comment_list:(SingleLineCommentNoEOL [ \t\uFEFF]*)*
     {
       var result = "";
       result += value.join("");
@@ -85,7 +85,10 @@ comment
 
 SingleLineComment
     = $("//" [^\x0d\x0a]* [\x0d\x0a])
-    
+
+SingleLineCommentNoEOL
+    = $("//" [^\x0d\x0a]*)
+        
 MultiLineComment
     = $("/*" (!"*/" .)* "*/")
 
@@ -404,36 +407,27 @@ object_type
     }
 
 type_body
-    = firstws:_ first:type_member _ rest:(SEMI? _ type_body_member _)* _ SEMI? lastws:_
+    = members:type_body_member* last:(type_member _)?
     {
-      var result = [];
-      if (firstws.value !== "") {
-        result.push(firstws);
+      if (last !== null) {
+        members.push(last[0]);
       }
-      result.push(first);
-      var i;
-      for (i=0; i<rest.length; i++) {
-        if (rest[i][1] !== null && rest[i][1].value !== "") {
-          result.push(rest[i][1]);
-        }
-        result.push(rest[i][2]);
-      }
-      
-      if (lastws.value !== "") {
-        result.push(lastws);
-      }
-      return result;
-    }
+      return members;
+    }    
 
 type_body_member
-    = member:type_member
-    {
-      return member;
-    }
-    / ws:__
-    {
-      return ws;
-    }
+   = tm:type_member _ SEMI
+   {
+     return tm;
+   }
+   / tm:type_member _NoEOL_ LineTerminatorSequence
+   {
+     return tm;
+   }
+   / ws:__
+   {
+     return ws;
+   }
 
 type_member
     = signature:call_signature
@@ -519,9 +513,10 @@ property_name
     / Numeric
 
 call_signature
-    = type_parameters:type_parameters? _ LBRACKET _ parameters:parameter_list? _ RBRACKET _ type_annotation:type_annotation?
+    = type_parameters:type_parameters? _ LBRACKET _ parameters:parameter_list? _ RBRACKET type_annotation:(_ type_annotation)?
         {
-          return {type: FUNCTION_TYPE, typeParameters: type_parameters, parameters: parameters || [], returnType: type_annotation };
+          return {type: FUNCTION_TYPE, typeParameters: type_parameters, parameters: parameters || [],
+            returnType: type_annotation !== null ? type_annotation[1] : null };
         }
 
 parameter_list
@@ -750,6 +745,11 @@ ambient_property_member_declaration
     {
       return {type: PROPERTY, name: name, access: (access !== null ? access[0] : null), static: static!==null,
         optional: false, signature: type_annotation === undefined ? null : type_annotation[1] };
+    }
+    / access:(accessibility_modifier? __) static:(STATIC __)? name:property_name _ signature:call_signature _NoEOL_ LineTerminatorSequence
+    {
+      return {type: METHOD, name: name, access: (access !== null ? access[0] : null), static: static !== null,
+        optional: false, signature: signature};
     }
 
 

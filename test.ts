@@ -537,12 +537,23 @@ export function testClassWithMissingSemi(test: nodeunit.Test): void {
 }`);
 }
 
+export function testInterfaceWithMissingSemi(test: nodeunit.Test): void {
+  parseTest(test, `interface Foo { [key: string]: string }`);
+}
+
 export function testMissingSemi(test: nodeunit.Test): void {
   parseTest(test, `interface Foo {
   smeg: {
       foz: number;
   }
   bar: string;
+}`);
+}
+
+export function testInterfaceMissingTrailingSemi(test: nodeunit.Test): void {
+  parseTest(test, `interface Foo {
+  smeg: string; // first comment
+  bar: string   // some comment
 }`);
 }
 
@@ -569,6 +580,14 @@ export function testUnionWithSpaces(test: nodeunit.Test): void {
 export function testInterfaceNoLastSemi(test: nodeunit.Test): void {
   parseTest(test, `interface Foo {
   bar(): void}`);
+}
+
+export function testClassMethodMissingSemi(test: nodeunit.Test): void {
+  parseTest(test, `declare class Foo {
+  baz: string;
+  foo()
+  zyzz: string;
+}`);
 }
 
 export function testModuleWithInterfaces(test: nodeunit.Test): void {
