@@ -592,6 +592,13 @@ export function testMissingSemiInModule2(test: nodeunit.Test): void {
 }`);
 }
 
+export function testInterfaceDirectCallMissingSemi(test: nodeunit.Test): void {
+  parseTest(test, `interface Foo {
+    <T>(key: string, value: T): void
+    <T>(key: string): T
+}`);
+}
+
 export function testCallSignature(test: nodeunit.Test): void {
   parseTest(test, `declare var smeg: { ():string; };`);
 }

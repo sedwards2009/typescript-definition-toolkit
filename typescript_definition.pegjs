@@ -381,7 +381,7 @@ parenthesized_type
     }
 
 type_reference
-    = name:type_name _ ta:type_arguments
+    = name:type_name _NoEOL_ ta:type_arguments  /* Using to _NoEOL_ to aid own (fake) support of ASI. */
     {
       return { type: OBJECT_TYPE_REF, name: name, typeArguments: ta };
     }
