@@ -24,6 +24,7 @@ var ENUM_MEMBER = 19;
 var UNION_TYPE = 20;
 var SPECIALIZED_SIGNATURE = 21;
 var TYPE_QUERY = 22;
+var CONSTRUCTOR_TYPE = 23;
 
 }
 
@@ -339,9 +340,9 @@ type_argument
     = type
 
 type
-    = primary_or_union_type
+    = constructor_type
+    / primary_or_union_type
     / function_type
-    / constructor_type
 
 primary_or_union_type
     = union_type
@@ -490,7 +491,10 @@ function_type
     }
 
 constructor_type
-    = NEW _ type_parameters? _ LBRACKET _ parameter_list? _ RBRACKET _ ARROW _ type
+    = NEW _ typeParameters:type_parameters? _ LBRACKET _ parameterList:parameter_list? _ RBRACKET _ ARROW _ type:type
+    {
+      return { type: CONSTRUCTOR_TYPE, typeParameters: typeParameters, parameters: parameterList || [], returnType: type };
+    }
 
 type_query
     = TYPEOF __ name:type_name

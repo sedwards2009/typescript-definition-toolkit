@@ -321,6 +321,10 @@ export function testInterfaceGenerics(test: nodeunit.Test): void {
 }`);
 }
 
+export function testNewSignature(test: nodeunit.Test): void {
+  roundTrip(test, `declare function foo(bar: new(...args: any[]) => Object): void;`);
+}
+
 export function testVarFunctionType(test: nodeunit.Test): void {
   roundTrip(test, `declare var bar: (e) => any;`);
 }

@@ -30,7 +30,8 @@ export module Defs {
     ENUM_MEMBER = 19,
     UNION_TYPE = 20,
     SPECIALIZED_SIGNATURE = 21,
-    TYPE_QUERY = 22
+    TYPE_QUERY = 22,
+    CONSTRUCTOR_TYPE = 23
   }
   
   export interface Base {
@@ -111,6 +112,12 @@ export module Defs {
   
   export interface TypeQuery extends PrimaryType {
     value: string;
+  }
+  
+  export interface ConstructorType extends PrimaryType {
+    typeParameters: TypeParameter[];
+    returnType: PrimaryType;
+    parameters: Parameter[];
   }
   
   // FIXME add an array type??
@@ -381,6 +388,23 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
       case Defs.Type.SPECIALIZED_SIGNATURE:
         let specicalizedSignature = <Defs.SpecializedSignature> obj;
         return '"' + specicalizedSignature.value + '"';
+        break;
+        
+      case Defs.Type.CONSTRUCTOR_TYPE:
+        let constructorType = <Defs.FunctionType> obj;
+
+        result = "new";
+        if (constructorType.typeParameters !== null && constructorType.typeParameters.length !==0) {
+          result += "<";
+          result += constructorType.typeParameters.map( (p) => toString(p) ).join(", ");
+          result += ">";
+        }
+        
+        result += "(";
+        result += constructorType.parameters.map( (p) => toString(p, level, indent) ).join(", ");
+        result += ")";
+        result += (constructorType.returnType !== null ? (" => "+ toString(constructorType.returnType)) : "");
+        return result;
         break;
 
   }
