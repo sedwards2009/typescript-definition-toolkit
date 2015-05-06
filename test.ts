@@ -384,6 +384,13 @@ export function testOptionalParameters(test: nodeunit.Test): void {
 }`);
 }
 
+export function testOptionalPropertyWithSpace(test: nodeunit.Test): void {
+  roundTrip(test, `interface Foo {
+  baz ?: string;
+  zyzz ?: string;
+}`);
+}
+
 export function testTypeRefInBrackets(test: nodeunit.Test): void {
   roundTrip(test, `export interface Baz {
     (callback: Test): void;

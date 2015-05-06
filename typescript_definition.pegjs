@@ -499,7 +499,7 @@ type_query
     }
 
 property_signature
-    = name:property_name qm:QUESTIONMARK? _ type_annotation:type_annotation?
+    = name:property_name _ qm:QUESTIONMARK? _ type_annotation:type_annotation?
     {
       return {type: PROPERTY, name: name, access: null, static: false, optional: qm !== null, signature: type_annotation };
     }
@@ -630,7 +630,7 @@ index_signature
     }
 
 method_signature
-    = name:property_name qm:QUESTIONMARK? signature:call_signature
+    = name:property_name _ qm:QUESTIONMARK? signature:call_signature
     {
       return { type: METHOD, name:name, optional: qm!==null, static: false, signature: signature, access: null };
     }
