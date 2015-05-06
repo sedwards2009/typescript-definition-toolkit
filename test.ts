@@ -331,7 +331,7 @@ export function testTypeAlias2(test: nodeunit.Test): void {
 }
 
 export function testTypeAliasInModule(test: nodeunit.Test): void {
-  roundTrip(test, `declare module "foo" {
+  parseTest(test, `declare module "foo" {
   type strings = string|string[];
 }`);
 }
@@ -385,7 +385,7 @@ export function testOptionalParameters(test: nodeunit.Test): void {
 }
 
 export function testOptionalPropertyWithSpace(test: nodeunit.Test): void {
-  roundTrip(test, `interface Foo {
+  parseTest(test, `interface Foo {
   baz ?: string;
   zyzz ?: string;
 }`);
@@ -510,7 +510,7 @@ export function testClassConstructor(test: nodeunit.Test): void {
 }
 
 export function testAmbientEnum(test: nodeunit.Test): void {
-  roundTrip(test, `declare enum Colors {
+  parseTest(test, `declare enum Colors {
   RED = 0,
   GREEN,
   BLUE
@@ -518,7 +518,7 @@ export function testAmbientEnum(test: nodeunit.Test): void {
 }
 
 export function testEnumTrailingComma(test: nodeunit.Test): void {
-  roundTrip(test, `declare enum Colors {
+  parseTest(test, `declare enum Colors {
   RED = 0,
   GREEN = 1,
   BLUE = 2,
