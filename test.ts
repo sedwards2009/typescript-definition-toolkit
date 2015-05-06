@@ -344,6 +344,10 @@ export function testTypeOfVar(test: nodeunit.Test): void {
   roundTrip(test, `declare var $: typeof spaceProng.$;`);
 }
 
+export function testVarWithSpace(test: nodeunit.Test): void {
+  parseTest(test, `declare var BF : Smeg;`);
+}
+
 export function testImportDeclaration(test: nodeunit.Test): void {
   roundTrip(test, `import foo = bar;`);
 }
