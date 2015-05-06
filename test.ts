@@ -165,6 +165,10 @@ export function testParameterStringMatch(test: nodeunit.Test): void {
   roundTrip(test, `declare function foo(bar: "smeg"): string;`);
 }
 
+export function testOptionalParameterStringMatch(test: nodeunit.Test): void {
+  roundTrip(test, `declare function foo(bar?: "smeg"): string;`);
+}
+
 export function testTuple(test: nodeunit.Test): void {
   roundTrip(test, `
     export interface Baz {

@@ -586,7 +586,12 @@ optional_parameter_list
     }
 
 optional_parameter
-    = accessibility:accessibility_modifier? _ name:Identifier _ QUESTIONMARK _ type:type_annotation?
+    = accessibility:accessibility_modifier? _ name:Identifier _ QUESTIONMARK _ COLON _ str:StringLiteral
+      {
+        return {type: PARAMETER, name: name, accessibility: accessibility, required: false,
+          parameterType: {type: SPECIALIZED_SIGNATURE, value: str}, initialiser: null, rest: false };
+      }
+    / accessibility:accessibility_modifier? _ name:Identifier _ QUESTIONMARK _ type:type_annotation?
       {
         return {type: PARAMETER, name: name, accessibility: accessibility, required: false, parameterType: type, initialiser: null, rest: false };
       }
