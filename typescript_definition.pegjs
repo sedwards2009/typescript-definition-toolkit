@@ -194,7 +194,7 @@ StringLiteral
     }
 
 StringLiteralEscape
-    = $("\\" ['"bfnrtv\\])
+    = $("\\" ['"bfnrtv\\0])
 
 Numeric
     = $("-"? [0-9]+)

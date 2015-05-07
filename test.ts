@@ -105,6 +105,11 @@ export function testStringLiteral3(test: nodeunit.Test): void {
 `);
 }
 
+export function testStringLiteral4(test: nodeunit.Test): void {
+  roundTrip(test, `declare function foo(bar: "\\0"): void;
+`);
+}
+
 export function testExport(test: nodeunit.Test): void {
   roundTrip(test, `export = Foobar;
 `);
