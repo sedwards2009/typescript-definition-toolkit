@@ -241,6 +241,12 @@ export function testInterfaceMethod5(test: nodeunit.Test): void {
 }`);
 }
 
+export function testInterfaceRestWithSpace(test: nodeunit.Test): void {
+  roundTrip(test, `export interface Baz {
+  bop(... times: number): void;
+}`);
+}
+
 export function testInterfaceNew(test: nodeunit.Test): void {
   roundTrip(test, `export interface Baz {
   new();

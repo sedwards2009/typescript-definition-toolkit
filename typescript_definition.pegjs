@@ -613,11 +613,11 @@ initialiser
     / Numeric
 
 rest_parameter
-    = ELLIPSIS name:Identifier _ parameterType:type_annotation
+    = ELLIPSIS _ name:Identifier _ parameterType:type_annotation
       {
         return {type: PARAMETER, name: name, accessibility: null, required: false, rest: true, parameterType: parameterType, initialiser: null };
       }
-    / ELLIPSIS name:Identifier
+    / ELLIPSIS _ name:Identifier
       {
         return {type: PARAMETER, name: name, accessibility: null, required: false, rest: true, parameterType: null, initialiser: null };
       }
