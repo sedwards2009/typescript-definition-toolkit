@@ -184,14 +184,17 @@ Identifier
     = $([$_a-zA-Z][$_a-zA-Z0-9]*)
 
 StringLiteral
-    = str:('"' [^"]* '"')
+    = str:('"' ([^"\\] / StringLiteralEscape)* '"')
     {
       return str[1].join("");
     }
-    / str:("'" [^']* "'")
+    / str:("'" ([^'\\] / StringLiteralEscape)* "'")
     {
       return str[1].join("");
     }
+
+StringLiteralEscape
+    = $("\\" ['"bfnrtv\\])
 
 Numeric
     = $("-"? [0-9]+)

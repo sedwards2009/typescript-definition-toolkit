@@ -90,6 +90,21 @@ export function testMultiComment(test: nodeunit.Test): void {
 `);
 }
 
+export function testStringLiteral(test: nodeunit.Test): void {
+  roundTrip(test, `declare function foo(bar: 'Let\\'s go'): void;
+`);
+}
+
+export function testStringLiteral2(test: nodeunit.Test): void {
+  roundTrip(test, `declare function foo(bar: "Let\\"s go"): void;
+`);
+}
+
+export function testStringLiteral3(test: nodeunit.Test): void {
+  roundTrip(test, `declare function foo(bar: "Let\\\\"): void;
+`);
+}
+
 export function testExport(test: nodeunit.Test): void {
   roundTrip(test, `export = Foobar;
 `);
