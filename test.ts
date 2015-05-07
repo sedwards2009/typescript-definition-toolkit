@@ -214,6 +214,14 @@ export function testGenerics2(test: nodeunit.Test): void {
 `);
 }
 
+export function testGenerics3(test: nodeunit.Test): void {
+  roundTrip(test, `
+    export interface Baz {
+    	pair? <T, X>(x: X): T;
+    }    
+`);
+}
+
 export function testInterfaceMethod(test: nodeunit.Test): void {
   roundTrip(test, `
     export interface Baz {

@@ -650,7 +650,7 @@ index_signature
     }
 
 method_signature
-    = name:property_name _ qm:QUESTIONMARK? signature:call_signature
+    = name:property_name _ qm:QUESTIONMARK? _ signature:call_signature
     {
       return { type: METHOD, name:name, optional: qm!==null, static: false, signature: signature, access: null };
     }
