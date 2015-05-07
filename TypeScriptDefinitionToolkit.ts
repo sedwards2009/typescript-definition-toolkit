@@ -147,6 +147,7 @@ export module Defs {
   }
   
   export interface TypeAlias extends Base {
+    ambient: boolean;
     name: string;
     entity: ObjectType | ObjectTypeRef;
   }
@@ -311,7 +312,7 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         
       case Defs.Type.TYPE_ALIAS:
         let typeAlias = <Defs.TypeAlias> obj;
-        return dent + "type " + typeAlias.name + " = " + toString(typeAlias.entity) + ";";
+        return dent + (typeAlias.ambient ? "declare " : "") + "type " + typeAlias.name + " = " + toString(typeAlias.entity) + ";";
         break;
         
       case Defs.Type.INDEX_METHOD:

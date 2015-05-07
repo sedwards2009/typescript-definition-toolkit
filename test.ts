@@ -344,6 +344,10 @@ export function testTypeAliasInModule(test: nodeunit.Test): void {
 }`);
 }
 
+export function testAmbientTypeAlias(test: nodeunit.Test): void {
+  roundTrip(test, `declare type foo = bar;`);
+}
+
 export function testBuiltinTypeNameCollision(test: nodeunit.Test): void {
   roundTrip(test, `declare var foo: strings;`);
 }

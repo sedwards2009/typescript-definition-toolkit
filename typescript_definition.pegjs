@@ -647,7 +647,7 @@ method_signature
 type_alias_declaration
     = TYPE __ name:Identifier _ EQUALS _ entity:type _ SEMI
     {
-      return { type: TYPE_ALIAS, name: name, entity: entity };
+      return { type: TYPE_ALIAS, name: name, entity: entity, ambient: false };
     }
 
 
@@ -697,6 +697,11 @@ ambient_declaration
       return value;
     }
     / DECLARE __ value:ambient_module_declaration
+    {
+      value.ambient = true;
+      return value;
+    }
+    / DECLARE __ value:type_alias_declaration
     {
       value.ambient = true;
       return value;
