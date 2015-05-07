@@ -587,6 +587,14 @@ export function testEnumEmpty(test: nodeunit.Test): void {
 }`);
 }
 
+export function testConstEnum(test: nodeunit.Test): void {
+  parseTest(test, `declare const enum Colors {
+  RED = 0,
+  GREEN = 1,
+  BLUE = 2
+}`);
+}
+
 export function testAmbientVar2(test: nodeunit.Test): void {
   roundTrip(test, `declare module Foo {
   var smeg: {

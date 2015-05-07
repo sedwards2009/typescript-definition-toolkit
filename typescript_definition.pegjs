@@ -130,6 +130,8 @@ PRIVATE = "private"
 
 PROTECTED = "protected"
 
+CONST = "const"
+
 ENUM = "enum"
 
 STATIC = "static"
@@ -777,7 +779,7 @@ ambient_property_member_declaration
 
 
 ambient_enum_declaration
-    = ENUM _ name:Identifier _ LBRACE _ member:ambient_enum_member? rest_members:(_ COMMA _ ambient_enum_member)* _ COMMA? _ RBRACE
+    = constant:(CONST __)? ENUM _ name:Identifier _ LBRACE _ member:ambient_enum_member? rest_members:(_ COMMA _ ambient_enum_member)* _ COMMA? _ RBRACE
     {
       var memberList = [];
       if (member !== null) {
@@ -788,7 +790,7 @@ ambient_enum_declaration
           memberList.push(item[3]);
         });
       }
-      return { type: ENUM, name: name, members: memberList, export: false, ambient: false};
+      return { type: ENUM, name: name, members: memberList, export: false, ambient: false, constant: constant !== null};
     }
 
 /*

@@ -180,6 +180,7 @@ export module Defs {
     members: EnumMember[];
     export: boolean;
     ambient: boolean;
+    constant: boolean;
   }
   
   export interface EnumMember extends Base {
@@ -375,6 +376,9 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         }
         if (enumDecl.export) {
           result += "export ";
+        }
+        if (enumDecl.constant) {
+          result += "const ";
         }
         result += "enum ";
         result += enumDecl.name;
