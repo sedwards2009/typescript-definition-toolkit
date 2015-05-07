@@ -533,6 +533,13 @@ export function testAmbientEnum(test: nodeunit.Test): void {
 }`);
 }
 
+export function testEnumMinus(test: nodeunit.Test): void {
+  parseTest(test, `declare enum Colors {
+  RED = -1,
+  BLUE
+}`);
+}
+
 export function testEnumTrailingComma(test: nodeunit.Test): void {
   parseTest(test, `declare enum Colors {
   RED = 0,

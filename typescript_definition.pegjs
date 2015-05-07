@@ -194,7 +194,7 @@ StringLiteral
     }
 
 Numeric
-    = $[0-9]+
+    = $("-"? [0-9]+)
 
 declaration_element
     = export_assignment
