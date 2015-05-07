@@ -22,11 +22,13 @@
     "url": "https://github.com/sedwards2009/typescript-definition-parser/issues"
   },
   "homepage": "https://github.com/sedwards2009/typescript-definition-parser",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
+    "glob": "^5.0.5",
     "nodeunit": "^0.9.1",
     "pegjs": "^0.8.0",
+    "source-map-support": "^0.2.10",
+    "tsd": "^0.6.0-beta.5",
     "typescript": "^1.5.0-alpha"
   }
 }

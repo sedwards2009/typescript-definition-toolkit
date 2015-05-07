@@ -6,17 +6,22 @@
         "declaration": false,
         "noImplicitAny": false,
         "removeComments": true,
-        "noLib": false
+        "noLib": false,
+        "sourceMap": true
     },
     "filesGlob": [
         "./**/*.ts",
-        "!./node_modules/**/*.ts",
-        "!./typings/**/*.ts"
+        "!./node_modules/**/*.ts"
     ],
     "files": [
         "./TypeScriptDefinitionToolkit.ts",
         "./definitely_tested.ts",
         "./test.ts",
-        "./typescript_definition.d.ts"
+        "./typescript_definition.d.ts",
+        "./typings/glob/glob.d.ts",
+        "./typings/minimatch/minimatch.d.ts",
+        "./typings/node/node.d.ts",
+        "./typings/nodeunit/nodeunit.d.ts",
+        "./typings/tsd.d.ts"
     ]
 }

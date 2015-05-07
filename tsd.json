@@ -7,6 +7,15 @@
   "installed": {
     "nodeunit/nodeunit.d.ts": {
       "commit": "6c881ac69266aef37e2a879b0936609d9805d116"
+    },
+    "glob/glob.d.ts": {
+      "commit": "6fb56c5277d6fda738080c11415c79513b64317e"
+    },
+    "node/node.d.ts": {
+      "commit": "6fb56c5277d6fda738080c11415c79513b64317e"
+    },
+    "minimatch/minimatch.d.ts": {
+      "commit": "6fb56c5277d6fda738080c11415c79513b64317e"
     }
   }
 }

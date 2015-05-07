@@ -2,8 +2,6 @@
  * Tests for the typescript-definition-parser
  *
  */
-/// <reference path="./typings/tsd.d.ts" />
-/// <reference path="./typescript_definition.d.ts" />
 "use strict";
 
 import nodeunit = require("nodeunit");
