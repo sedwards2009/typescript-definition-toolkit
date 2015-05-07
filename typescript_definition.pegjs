@@ -697,7 +697,7 @@ ambient_declaration
       value.ambient = true;
       return value;
     }
-    / DECLARE __ value:ambient_class_declaration
+    / (EXPORT __)? DECLARE __ value:ambient_class_declaration
     {
       value.ambient = true;
       return value;

@@ -465,6 +465,13 @@ export function testAmbientClass(test: nodeunit.Test): void {
 `);
 }
 
+export function testExportAmbientClass(test: nodeunit.Test): void {
+  parseTest(test, `export declare class Foobar {
+  smeg(): string;
+}
+`);
+}
+
 export function testAmbientClassProperty(test: nodeunit.Test): void {
   roundTrip(test, `declare class Foobar {
   beastie: string;
