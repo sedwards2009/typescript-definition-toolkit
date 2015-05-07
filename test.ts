@@ -582,6 +582,11 @@ export function testEnumTrailingComma(test: nodeunit.Test): void {
 }`);
 }
 
+export function testEnumEmpty(test: nodeunit.Test): void {
+  parseTest(test, `declare enum Colors {
+}`);
+}
+
 export function testAmbientVar2(test: nodeunit.Test): void {
   roundTrip(test, `declare module Foo {
   var smeg: {
