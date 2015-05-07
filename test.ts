@@ -566,6 +566,14 @@ export function testEnumMinus(test: nodeunit.Test): void {
 }`);
 }
 
+export function testHexNumeric(test: nodeunit.Test): void {
+  parseTest(test, `declare enum Colors {
+  RED = 0x01,
+  BLUE = 0X02,
+  GREEN = 0x1243fA
+}`);
+}
+
 export function testEnumTrailingComma(test: nodeunit.Test): void {
   parseTest(test, `declare enum Colors {
   RED = 0,

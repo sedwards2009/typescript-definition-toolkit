@@ -197,7 +197,13 @@ StringLiteralEscape
     = $("\\" ['"bfnrtv\\0])
 
 Numeric
-    = $("-"? [0-9]+)
+    = HexNumeric
+    / DecimalNumeric
+
+HexNumeric
+    = $("0x"i [0-9a-fA-F]+)
+
+DecimalNumeric = $("-"? [0-9]+)
 
 declaration_element
     = export_assignment
