@@ -756,22 +756,22 @@ ambient_class_body_element
     }
 
 ambient_property_member_declaration
-    = access:(accessibility_modifier? __) static:(STATIC __)? name:property_name _ type_annotation:type_annotation? _ SEMI
+    = access:(accessibility_modifier __)? static:(STATIC __)? name:property_name _ type_annotation:type_annotation? _ SEMI
     {
       return {type: PROPERTY, name: name, access: (access !== null ? access[0] : null), static: static!==null,
-        optional: false, signature: type_annotation === undefined ? null : type_annotation };
+        optional: false, signature: type_annotation === null ? null : type_annotation };
     }
-    / access:(accessibility_modifier? __) static:(STATIC __)? name:property_name _ signature:call_signature _ SEMI
+    / access:(accessibility_modifier __)? static:(STATIC __)? name:property_name _ signature:call_signature _ SEMI
     {
       return {type: METHOD, name: name, access: (access !== null ? access[0] : null), static: static !== null,
         optional: false, signature: signature};
     }
-    / access:(accessibility_modifier? __) static:(STATIC __)? name:property_name type_annotation:(_ type_annotation)? _NoEOL_ LineTerminatorSequence
+    / access:(accessibility_modifier __)? static:(STATIC __)? name:property_name type_annotation:(_ type_annotation)? _NoEOL_ LineTerminatorSequence
     {
       return {type: PROPERTY, name: name, access: (access !== null ? access[0] : null), static: static!==null,
-        optional: false, signature: type_annotation === undefined ? null : type_annotation[1] };
+        optional: false, signature: type_annotation === null ? null : type_annotation[1] };
     }
-    / access:(accessibility_modifier? __) static:(STATIC __)? name:property_name _ signature:call_signature _NoEOL_ LineTerminatorSequence
+    / access:(accessibility_modifier __)? static:(STATIC __)? name:property_name _ signature:call_signature _NoEOL_ LineTerminatorSequence
     {
       return {type: METHOD, name: name, access: (access !== null ? access[0] : null), static: static !== null,
         optional: false, signature: signature};

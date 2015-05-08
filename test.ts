@@ -691,6 +691,12 @@ export function testClassMethodMissingSemi(test: nodeunit.Test): void {
 }`);
 }
 
+export function testClassMethodNoSpace(test: nodeunit.Test): void {
+  roundTrip(test, `declare class Foo {
+    bar();void;
+}`);
+}
+
 export function testModuleWithInterfaces(test: nodeunit.Test): void {
   roundTrip(test, `declare module Foo {
   export interface Bar {
