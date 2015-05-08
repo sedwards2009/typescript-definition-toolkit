@@ -660,6 +660,10 @@ type_alias_declaration
     {
       return { type: TYPE_ALIAS, name: name, entity: entity, ambient: false };
     }
+    / TYPE __ name:Identifier _ EQUALS _ entity:type _NoEOL_ LineTerminatorSequence
+    {
+      return { type: TYPE_ALIAS, name: name, entity: entity, ambient: false };
+    }
 
 
 type_annotation

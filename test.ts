@@ -671,6 +671,13 @@ export function testMissingSemiInModule2(test: nodeunit.Test): void {
 }`);
 }
 
+export function testUnionMissingSemi(test: nodeunit.Test): void {
+  parseTest(test,`declare module L {
+    type LatLngExpression = LatLng | number[] | ({ lat: number; lng: number })
+    type LatLngBoundsExpression = LatLngBounds | LatLngExpression[];
+}`);
+}
+
 export function testInterfaceDirectCallMissingSemi(test: nodeunit.Test): void {
   parseTest(test, `interface Foo {
     <T>(key: string, value: T): void
