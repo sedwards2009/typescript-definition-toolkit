@@ -749,7 +749,7 @@ ambient_class_body_element
     {
       return prop;
     }
-    / index_signature
+    / index_signature _ SEMI
     / ws:__
     {
       return ws;

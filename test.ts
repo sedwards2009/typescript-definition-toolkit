@@ -564,6 +564,14 @@ export function testClassConstructor(test: nodeunit.Test): void {
 }`);
 }
 
+export function testClassWithIndex(test: nodeunit.Test): void {
+  roundTrip(test, `declare module TypeScript.Services.Formatting {
+    class Rules {
+        [name: string]: any;
+    }
+}`);
+}
+
 export function testAmbientEnum(test: nodeunit.Test): void {
   parseTest(test, `declare enum Colors {
   RED = 0,
