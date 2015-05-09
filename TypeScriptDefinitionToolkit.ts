@@ -1,3 +1,18 @@
+/*
+ * Copyright 2015 Simon Edwards <simon@simonzone.com>
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 "use strict";
 
 import nodeunit = require("nodeunit");
@@ -5,7 +20,10 @@ import typescript_definition = require("./typescript_definition");
 
 export module Defs {
   
-  export enum Type {
+  /**
+   * Each object in the tree is tagged with this enum to identify its type.
+   */
+  export const enum Type {
     WHITESPACE = 0,
     MODULE = 1,
     INTERFACE = 2,
@@ -22,7 +40,7 @@ export module Defs {
     TYPE_PARAMETER = 13,
     TUPLE_TYPE = 14,
     EXPORT_ASSIGNMENT = 15,
-    CLASS_DECLARATION = 16,
+    CLASS = 16,
     AMBIENT_VARIABLE = 17,
     ENUM = 18,
     ENUM_MEMBER = 19,
@@ -32,166 +50,536 @@ export module Defs {
     CONSTRUCTOR_TYPE = 23
   }
   
+  /**
+   * Base interface for all types which appear in the tree.
+   */
   export interface Base {
     type: Type;
   }
   
+  /**
+   * White space and may be mixed with comments.
+   */
   export interface WhiteSpace extends Base {
+    /**
+     * The white space text possibly with embedded comments.
+     */
     value: string;
   }
   
+  /**
+   * Module
+   */
   export interface Module extends Base {
+    /**
+     * Name of the module.
+     */
     name: string;
+    
+    /**
+     * True if this module is an ambient module.
+     */
     ambient: boolean;
+    
+    /**
+     * True if this module is exported.
+     */
     export: boolean;
+    
+    /**
+     * List of module members.
+     */
     members: Base[];
+    
+    /**
+     * True if this module is an external module.
+     */
     external: boolean;
   }
   
+  /**
+   * Interface
+   */
   export interface Interface extends Base {
+    
+    /**
+     * True if this module is an ambient module.
+     */
     ambient: boolean;
+    
+    /**
+     * Name of the interface.
+     */
     name: string;
+    
+    /**
+     * Type parameters for generics.
+     */
     typeParameters: TypeParameter[];
+    
+    /**
+     * List of interfaces which this interface extends.
+     */
     extends: ObjectTypeRef[];
+    
+    /**
+     * Definition of the interface's members.
+     */
     objectType: ObjectType;
+    
+    /**
+     * True if this interface is exported.
+     */
     export: boolean;
   }
   
+  /**
+   * Function
+   */
   export interface Function extends Base {
+    /**
+     * Name of the function.
+     */
     name: string;
+    
+    /**
+     * Function signature.
+     */
     signature: FunctionType;
+    
+    /**
+     * True if this module is an ambient module.
+     */
     ambient: boolean;
   }
   
+  /**
+   * Defines a function type/signature.
+   */
   export interface FunctionType extends Base {
+    /**
+     * List of parameters for generics.
+     */
     typeParameters: TypeParameter[];
+    
+    /**
+     * Return type.
+     */
     returnType: PrimaryType;
+    
+    /**
+     * List of parameters
+     */
     parameters: Parameter[];
   }
   
+  /**
+   * Parameter for a function.
+   */
   export interface Parameter extends Base {
+    /**
+     * Name of the parameter.
+     */
     name: string;
+    
+    /**
+     * Accessibility / visibility.
+     * One of "public", "private", "protected" or null.
+     */
     accessibility: string;
+    
+    /**
+     * True if this is a required parameter.
+     */
     required: boolean;
+    
+    /**
+     * True if this is a rest parameter.
+     */
     rest: boolean;
+    
+    /**
+     * Initialiser string or null if there is none.
+     */
     initialiser: string;
+    
+    /**
+     * Parameter type or null if it is missing.
+     */
     parameterType: PrimaryType | SpecializedSignature;
   }
   
+  /**
+   * Type parameter used in generics.
+   */
   export interface TypeParameter extends Base {
+    /**
+     * Parameter name.
+     */
     name: string;
+    
+    /**
+     * Primary type it extends, may be null if missing.
+     */
     extends: PrimaryType;
   }
   
+  /**
+   * Specializing type signature.
+   * 
+   * This is a string literal which appears as the type of a parameter in a
+   * function declaration. It acts as a simple pattern to match different
+   * overloaded function signatures to different specific values of that
+   * parameter.
+   */
   export interface SpecializedSignature extends Base {
+    /**
+     * The string value to match.
+     */
     value: string;
   } 
 
   // -- Types
+  /**
+   * Base interface for Types
+   */
   export interface PrimaryType extends Base {
   }
   
+  /**
+   * An complex object type.
+   */
   export interface ObjectType extends PrimaryType {
+    /**
+     * Member belonging to this type.
+     */
     members: Base[];
   }
   
+  /**
+   * A reference to a named object type.
+   */
   export interface ObjectTypeRef extends PrimaryType {
+    /**
+     * Name of the type being refered to.
+     */
     name: string;
+    
+    /**
+     * Arguments which specialize any generic type parameters.
+     */
     typeArguments: PrimaryType[];
   }
   
+  /**
+   * Tuple type. 
+   */
   export interface TupleType extends PrimaryType {
+    /**
+     * List of member types which compose the tuple.
+     */
     members: PrimaryType[];
   }
   
+  /**
+   * Union type. 
+   */
   export interface UnionType extends PrimaryType {
+    /**
+     * List of member types which compse this union.
+     */
     members: PrimaryType[];
   }
   
+  /**
+   * Represents a typeof query. 
+   */
   export interface TypeQuery extends PrimaryType {
+    /**
+     * Name of the type or variable being queried.
+     */
     value: string;
   }
   
+  /**
+   * Type describing a constructor function.
+   */
   export interface ConstructorType extends PrimaryType {
+    /**
+     * List of parameters for generics.
+     */
     typeParameters: TypeParameter[];
+
+    /**
+     * Return type.
+     */
     returnType: PrimaryType;
+    
+    /**
+     * List of parameters
+     */
     parameters: Parameter[];
   }
   
   // FIXME add an array type??
   // -- end types.
-    
+  
+  /**
+   * Import declaration.
+   */
   export interface ImportDeclaration extends Base {
+    /**
+     * Local name of the imported module. 
+     */
     name: string;
+    
+    /**
+     * Name of the external module.
+     */
     externalModule: string;
+    
+    /**
+     * True if this import is also being exported.
+     */
     export: boolean;
+    
+    /**
+     * True for imports which rely on an external module.
+     */
     external: boolean;
   }
   
+  /**
+   * Method
+   */
   export interface Method extends Base {
+    /**
+     * Name of the method.
+     */
     name: string;
+    
+    /**
+     * True if this method is optional.
+     */
     optional: boolean;
+    
+    /**
+     * The method signature.
+     */
     signature: FunctionType;
+    
+    /**
+     * True if this method is static.
+     */
     static: boolean;
-    access: string;
+    
+    /**
+     * Accessibility / visibility.
+     * One of "public", "private", "protected" or null.
+     */
+    accessibility: string;
   }
   
+  /**
+   * Index method.
+   * 
+   * An index method is typically of the form:
+   *     interface Foo {
+   *       [key: number]: string;
+   *     }
+   */
+  export interface IndexMethod extends Base {
+    /**
+     * The index parameter.
+     */
+    index: Parameter;
+    
+    /**
+     * The return type of the index method.
+     */
+    returnType: PrimaryType;
+  }
+    
+  /**
+   * Property
+   */
   export interface Property extends Base {
+    /**
+     * Name of the property.
+     */
     name: string;
+    
+    /**
+     * True if this method is optional.
+     */
     optional: boolean;
+    
+    /**
+     * The method signature.
+     */
     signature: FunctionType | PrimaryType;
+    
+    /**
+     * True if this method is static.
+     */
     static: boolean;
-    access: string;
+    
+    /**
+     * Accessibility / visibility.
+     * One of "public", "private", "protected" or null.
+     */
+    accessibility: string;
   }
   
-  export interface TypeAlias extends Base {
+  /**
+   * Type alias
+   */
+  export interface TypeAlias extends Base {   
+    /**
+     * True if this type alias is an ambient.
+     */
     ambient: boolean;
+    
+    /**
+     * Name of the type alias.
+     */
     name: string;
+    
+    /**
+     * The type this type alias represents.
+     */
     entity: ObjectType | ObjectTypeRef;
   }
   
-  export interface IndexMethod extends Base {
-    index: Parameter;
-    returnType: PrimaryType;
-  }
-  
+  /**
+   * Export assignment.
+   * 
+   * This is typically:
+   *     export = FooBar;
+   */
   export interface ExportAssignment extends Base {
+    /**
+     * Name of the value being exported.
+     */
     name: string;
   }
   
-  export interface AmbientVariable extends Base {
+  /**
+   * Variable
+   */
+  export interface Variable extends Base {
+    /**
+     * Name of the variable.
+     */
     name: string;
+
+    /**
+     * The variable's type.
+     * 
+     * This may be null. 
+     */    
     signature: FunctionType | PrimaryType;
   }
   
-  export interface ClassDeclaration extends Base {
-    name: string;
-    typeParameters: TypeParameter[];
-    members: Base[];
+  /**
+   * Class
+   */
+  export interface Class extends Base {
+    /**
+     * True if this class is ambient.
+     */
     ambient: boolean;
+    
+    /**
+     * Name of the class.
+     */
+    name: string;
+    
+    /**
+     * Type parameters for generics.
+     */
+    typeParameters: TypeParameter[];
+    
+    /**
+     * Object type this class extends.
+     * 
+     * This may be null.
+     */
     extends: ObjectTypeRef;
+
+    /**
+     * Definition of the class' members.
+     */
+    objectType: ObjectType;
+    
+    /**
+     * List of types this class implements.
+     */
     implements: ObjectTypeRef[];
   }
   
+  /**
+   * Enum 
+   */
   export interface Enum extends Base {
-    name: string;
-    members: EnumMember[];
-    export: boolean;
+    /**
+     * True if this class is ambient.
+     */
     ambient: boolean;
+    
+    /**
+     * True if this is constant enum.
+     */
     constant: boolean;
+
+    /**
+     * True if this enum is exported.
+     */
+    export: boolean;
+    
+    /**
+     * The list of enum members.
+     */
+    members: EnumMember[];
+    
+    /**
+     * Name of the enum.
+     */
+    name: string;
   }
   
+  /**
+   * Enum member 
+   */
   export interface EnumMember extends Base {
+    /**
+     * Name of this member.
+     */
     name: string;
+    
+    /**
+     * Enum value.
+     * 
+     * This may be null. Numeric values are just represented as strings.
+     */
     value: string;
   }
 }
 
-
+/**
+ * Parse a TypeScript definition file.
+ *
+ * @param text TypeScript definition text.
+ * @return List of objects found in the given text.
+ */
 export function parse(text: string): Defs.Base[] {
   return typescript_definition.parse(text);
 }
 
+/**
+ * Format a list [obj description]
+ * @return 
+ */
 export function toString(obj: Defs.Base, level: number=0, indent: string = "    "): string {
   let result: string;
   let dent: string = "";
@@ -289,7 +677,7 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
       case Defs.Type.METHOD:
         let method = <Defs.Method> obj;
         result = dent;
-        result += method.access !== null ? method.access + " " : "";
+        result += method.accessibility !== null ? method.accessibility + " " : "";
         result += method.static ? "static " : "";
         result += method.name;
         result += method.optional ? "?" :"";
@@ -301,7 +689,7 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
       case Defs.Type.PROPERTY:
         let prop = <Defs.Property> obj;
         result = dent;
-        result += prop.access !== null ? prop.access + " " : "";
+        result += prop.accessibility !== null ? prop.accessibility + " " : "";
         result += prop.name;
         result += prop.optional ? "?" : "";
         result += prop.signature === null ? "" : ": " + toStringFunctionSignature(prop.signature);
@@ -340,13 +728,13 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         break;
         
       case Defs.Type.AMBIENT_VARIABLE:
-        let ambientVariable = <Defs.AmbientVariable> obj;
+        let ambientVariable = <Defs.Variable> obj;
         return dent + "declare var " + ambientVariable.name +
           (ambientVariable.signature === null ? "" : ": " + toStringFunctionSignature(ambientVariable.signature)) +  ";\n";
         break;
         
-      case Defs.Type.CLASS_DECLARATION:
-        let classDec = <Defs.ClassDeclaration> obj;
+      case Defs.Type.CLASS:
+        let classDec = <Defs.Class> obj;
         result = dent;
         result += classDec.ambient ? "declare " : "";
         result += "class " + classDec.name;
@@ -361,7 +749,7 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
         if (classDec.implements !== null && classDec.implements.length !== 0) {
           result += " implements " + classDec.implements.map( (i) => toString(i)).join(", ");
         }
-        result += " {\n" + listToString(classDec.members, level+1, indent) + "}\n";
+        result += " {\n" + listToString(classDec.objectType.members, level+1, indent) + "}\n";
         return result;
         break;
         

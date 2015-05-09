@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 Simon Edwards <simon@simonzone.com>
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 /* Parser for TypeScript definition files. */
 
 {
@@ -17,7 +33,7 @@ var INDEX_METHOD = 12;
 var TYPE_PARAMETER = 13;
 var TUPLE_TYPE = 14;
 var EXPORT_ASSIGNMENT = 15;
-var CLASS_DECLARATION = 16;
+var CLASS = 16;
 var AMBIENT_VARIABLE = 17;
 var ENUM = 18;
 var ENUM_MEMBER = 19;
@@ -444,7 +460,7 @@ type_body_member
 type_member
     = signature:call_signature
     {
-      return {type: METHOD, name: "", optional: false, signature: signature, static: false, access: null};
+      return {type: METHOD, name: "", optional: false, signature: signature, static: false, accessibility: null};
     }
     / construct_signature
     / index_signature
@@ -516,7 +532,7 @@ type_query
 property_signature
     = name:property_name _ qm:QUESTIONMARK? _ type_annotation:type_annotation?
     {
-      return {type: PROPERTY, name: name, access: null, static: false, optional: qm !== null, signature: type_annotation };
+      return {type: PROPERTY, name: name, accessibility: null, static: false, optional: qm !== null, signature: type_annotation };
     }
 
 property_name
@@ -636,7 +652,7 @@ rest_parameter
 construct_signature
     = NEW _ type_parameters:type_parameters? _ LBRACKET _ parameters:parameter_list? _ RBRACKET _ type_annotation:type_annotation?
     {
-      return { type: METHOD, name: "new", optional: false, static: false, access: null,
+      return { type: METHOD, name: "new", optional: false, static: false, accessibility: null,
         signature:  {type: FUNCTION_TYPE, typeParameters: type_parameters, parameters: parameters || [], returnType: type_annotation } };
     }
 
@@ -652,7 +668,7 @@ index_signature
 method_signature
     = name:property_name _ qm:QUESTIONMARK? _ signature:call_signature
     {
-      return { type: METHOD, name:name, optional: qm!==null, static: false, signature: signature, access: null };
+      return { type: METHOD, name:name, optional: qm!==null, static: false, signature: signature, accessibility: null };
     }
 
 type_alias_declaration
@@ -735,9 +751,9 @@ ambient_function_declaration
         }
 
 ambient_class_declaration
-    = CLASS __ name:Identifier _ type_parameters:type_parameters? _  extends_:(EXTENDS __ class_type)? impls:(_ IMPLEMENTS __ class_or_interface_type_list)? _ LBRACE members:ambient_class_body RBRACE
+    = CLASS __ name:Identifier _ type_parameters:type_parameters? _  extends_:(EXTENDS __ class_type)? impls:(_ IMPLEMENTS __ class_or_interface_type_list)? _ LBRACE objectType:ambient_class_body RBRACE
     {
-      return {type: CLASS_DECLARATION, name: name, typeParameters: type_parameters, members: members, ambient: false,
+      return {type: CLASS, name: name, typeParameters: type_parameters, objectType: objectType, ambient: false,
         extends: extends_ === null || extends_ === undefined ? null : extends_[2],
         implements: impls === null || impls === undefined ? [] : impls[3]};
     }
@@ -746,8 +762,10 @@ ambient_class_body
     = ambient_class_body_elements
     
 ambient_class_body_elements
-    = ambient_class_body_element*
-
+    = members:ambient_class_body_element*
+    {
+      return {type: OBJECT_TYPE, members: members };
+    }
 ambient_class_body_element
     = prop:ambient_property_member_declaration
     {
@@ -762,22 +780,22 @@ ambient_class_body_element
 ambient_property_member_declaration
     = access:(accessibility_modifier __)? static:(STATIC __)? name:property_name _ type_annotation:type_annotation? _ SEMI
     {
-      return {type: PROPERTY, name: name, access: (access !== null ? access[0] : null), static: static!==null,
+      return {type: PROPERTY, name: name, accessibility: (access !== null ? access[0] : null), static: static!==null,
         optional: false, signature: type_annotation === null ? null : type_annotation };
     }
     / access:(accessibility_modifier __)? static:(STATIC __)? name:property_name _ signature:call_signature _ SEMI
     {
-      return {type: METHOD, name: name, access: (access !== null ? access[0] : null), static: static !== null,
+      return {type: METHOD, name: name, accessibility: (access !== null ? access[0] : null), static: static !== null,
         optional: false, signature: signature};
     }
     / access:(accessibility_modifier __)? static:(STATIC __)? name:property_name type_annotation:(_ type_annotation)? _NoEOL_ LineTerminatorSequence
     {
-      return {type: PROPERTY, name: name, access: (access !== null ? access[0] : null), static: static!==null,
+      return {type: PROPERTY, name: name, accessibility: (access !== null ? access[0] : null), static: static!==null,
         optional: false, signature: type_annotation === null ? null : type_annotation[1] };
     }
     / access:(accessibility_modifier __)? static:(STATIC __)? name:property_name _ signature:call_signature _NoEOL_ LineTerminatorSequence
     {
-      return {type: METHOD, name: name, access: (access !== null ? access[0] : null), static: static !== null,
+      return {type: METHOD, name: name, accessibility: (access !== null ? access[0] : null), static: static !== null,
         optional: false, signature: signature};
     }
 
