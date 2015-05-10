@@ -26,7 +26,7 @@ import toolkit = require("./TypeScriptDefinitionToolkit");
 function roundTrip(test: nodeunit.Test, text: string): void {
   try {
     const defs = toolkit.parse(text);
-    let newText = toolkit.listToString(defs);
+    let newText = toolkit.toString(defs);
     
     if (normalizeWhiteSpace(text) !== normalizeWhiteSpace(newText)) {
       console.log(JSON.stringify(defs));

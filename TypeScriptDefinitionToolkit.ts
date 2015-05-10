@@ -47,7 +47,8 @@ export module Defs {
     UNION_TYPE = 20,
     SPECIALIZED_SIGNATURE = 21,
     TYPE_QUERY = 22,
-    CONSTRUCTOR_TYPE = 23
+    CONSTRUCTOR_TYPE = 23,
+    ARRAY_TYPE = 24
   }
   
   /**
@@ -321,6 +322,16 @@ export module Defs {
     parameters: Parameter[];
   }
   
+  /**
+   * Array type.
+   */
+  export interface ArrayType extends PrimaryType {
+    /**
+     * Type of each element in the array.
+     */
+    member: PrimaryType;
+  }
+  
   // FIXME add an array type??
   // -- end types.
   
@@ -577,10 +588,20 @@ export function parse(text: string): Defs.Base[] {
 }
 
 /**
- * Format a list [obj description]
- * @return 
+ * Format a Base object or objects into a string.
+ * 
+ * This is basically the reverse of parse(). It takes the parsed structure
+ * formats it into a string.
+ *    
+ * @return formatted string.
  */
-export function toString(obj: Defs.Base, level: number=0, indent: string = "    "): string {
+export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, indent: string = "    "): string {
+  
+  if (Array.isArray(objOrList)) {
+    return listToString( <Defs.Base[]> objOrList);
+  }
+  
+  let obj = <Defs.Base> objOrList;
   let result: string;
   let dent: string = "";
   for (let i=level; i>0; i--) {
@@ -661,6 +682,11 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
           result += ">";
         }
         return result;
+        break;
+        
+      case Defs.Type.ARRAY_TYPE:
+        let arrayType = <Defs.ArrayType> obj;
+        return toString(arrayType.member) + "[]";
         break;
         
       case Defs.Type.TYPE_QUERY:
@@ -802,14 +828,14 @@ export function toString(obj: Defs.Base, level: number=0, indent: string = "    
   return "";
 }
 
-export function listToString(obj: Defs.Base[], level: number=0, indent: string = "    "): string {
+function listToString(obj: Defs.Base[], level: number=0, indent: string = "    "): string {
   if (obj === null) {
     return "";
   }
   return obj.map( (item) => toString(item, level, indent) ).join("");
 }
 
-export function toStringFunctionSignature(obj: Defs.Base, level: number=0,
+function toStringFunctionSignature(obj: Defs.Base, level: number=0,
     indent: string = "    "): string {
       
   let result: string;
@@ -834,3 +860,4 @@ export function toStringFunctionSignature(obj: Defs.Base, level: number=0,
         return toString(obj, level, indent);
   }
 }
+

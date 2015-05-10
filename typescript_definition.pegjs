@@ -41,6 +41,21 @@ var UNION_TYPE = 20;
 var SPECIALIZED_SIGNATURE = 21;
 var TYPE_QUERY = 22;
 var CONSTRUCTOR_TYPE = 23;
+var ARRAY_TYPE = 24;
+
+function convertArrayType(baseType, arrayParts) {
+  if (arrayParts === null || arrayParts.length === 0) {
+    return baseType;
+  }
+  return convertArray(baseType, arrayParts.length);
+}
+
+function convertArray(baseType, depth) {
+  if (depth <= 0) {
+    return baseType;
+  }
+  return convertArray( {type: ARRAY_TYPE, member: baseType}, depth-1);
+}
 
 }
 
@@ -378,27 +393,24 @@ primary_or_union_type
 primary_type
     = tq:type_query array:array_square
     {
-      tq.name = tq.name + array;
-      return tq;
+      return convertArrayType(tq, array);
     }
     / name:parenthesized_type array:array_square !(_ ARROW) /* A parenthesized looks very similar to the start of function signature */
     {
-      return { type: OBJECT_TYPE_REF, name: name + array, typeArguments: null };
+      return convertArrayType({ type: OBJECT_TYPE_REF, name: name, typeArguments: null }, array);
     }
     / tr:type_reference array:array_square
     {
-      tr.name = tr.name + array;
-      return tr;
+      return convertArrayType(tr, array);
     }
     / ot:object_type array:array_square
     {
-//      ot.name = ot.name + array;
-      return ot;
+      return convertArrayType(ot, array);
     }
 //    / array_type
     / tupleType:tuple_type array:array_square
     {
-      return tupleType;
+      return convertArrayType(tupleType, array);
     }
 
 parenthesized_type
@@ -473,12 +485,7 @@ type_member
     
 array_square = squares:(_ LSQUARE RSQUARE)*
     {
-      var result = "";
-      var i;
-      for (i=0; i<squares.length; i++) {
-        result += "[]";
-      }
-      return result;
+      return squares;
     }
     
 tuple_type
