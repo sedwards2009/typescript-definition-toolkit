@@ -861,3 +861,84 @@ function toStringFunctionSignature(obj: Defs.Base, level: number=0,
   }
 }
 
+/**
+ * Find all interface declarations by path.
+ * 
+ * @param data list of Defs.Bases to scan through.
+ * @param interfaceName Path to the desired interface. This is a dotted
+ *     path which may traverse modules, interfaces and classes.
+ * @return List of matches.
+ */
+export function findInterface(data: Defs.Base[], interfaceName: string): Defs.Base[] {
+  return searchByPath(data, interfaceName).filter( inter => inter.type === Defs.Type.INTERFACE );
+}
+
+/**
+ * Find all class declarations by path.
+ * 
+ * @param data list of Defs.Bases to scan through.
+ * @param className Path to the desired class. This is a dotted
+ *     path which may traverse modules, interfaces and classes.
+ * @return List of matches.
+ */
+export function findClass(data: Defs.Base[], className: string): Defs.Base[] {
+  return searchByPath(data, className).filter( inter => inter.type === Defs.Type.CLASS );
+}
+
+function searchByPath(data: Defs.Base[], path: string): Defs.Base[] {
+  let parts = path.split(/\./g);
+  return searchByPathList(data, parts);
+}
+
+/**
+ * Find objects by path.
+ *
+ * @param data list of Defs.Bases to scan.
+ * @param pathList list of path names to match on.
+ * @return List of matches.
+ */
+function searchByPathList(data: Defs.Base[], pathList: string[]): Defs.Base[] {
+  const first = pathList[0];
+  const found = data.filter( item => {
+    switch(item.type) {
+      case Defs.Type.MODULE:
+        return (<Defs.Module> item).name === first;
+        break;
+        
+      case Defs.Type.INTERFACE:
+        return (<Defs.Interface> item).name === first;
+        break;
+        
+      case Defs.Type.CLASS:
+        return (<Defs.Class> item).name === first;
+        break;
+        
+      default:
+        return false;
+    }
+  });
+
+  if (pathList.length <= 1) {
+    return found;
+  } else {
+    const rest = pathList.slice(1);
+    return found.map( item => {
+      switch(item.type) {
+        case Defs.Type.MODULE:
+          return searchByPathList( (<Defs.Module> item).members, rest);
+          break;
+          
+        case Defs.Type.INTERFACE:
+          return searchByPathList( (<Defs.Interface> item).objectType.members, rest);
+          break;
+          
+        case Defs.Type.CLASS:
+          return searchByPathList( (<Defs.Class> item).objectType.members, rest);
+          break;
+          
+        default:
+          return [];
+      }
+    }).reduce( (prev, current) => prev.concat(current), []);
+  }
+}

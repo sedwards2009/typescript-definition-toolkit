@@ -740,14 +740,54 @@ export function testModuleWithInterfaces(test: nodeunit.Test): void {
 }`);
 }
 
-// const defs = toolkit.parse(`declare module Foo {
-// export interface Bar {
-//   fooIt(): void;
-// }
-// 
-// export interface Baz {
-//   bing(): void;
-// }
-// }`);
-// console.log(JSON.stringify(defs));
-// console.log(toolkit.listToString(defs));
+export function testCompact(test: nodeunit.Test): void {
+  test.done();
+}
+
+export function testFindInterface(test: nodeunit.Test): void {
+  let data = toolkit.parse(`
+    // Not the interface we are looking for.
+    interface Bar {
+      
+    }
+    
+    // The interface we are looking for.
+    interface Foo {
+      
+    }
+    
+    interface Zyzz {
+      
+    }
+`);
+  
+  let searchResult = toolkit.findInterface(data, "Foo");
+  test.equal(searchResult.length, 1);
+  
+  test.done();
+}
+
+export function testFindInterface2(test: nodeunit.Test): void {
+  let data = toolkit.parse(`
+    declare module MegaMod {
+      // Not the interface we are looking for.
+      interface Bar {
+        
+      }
+      
+      // The interface we are looking for.
+      interface Foo {
+        
+      }
+      
+      interface Zyzz {
+        
+      }
+    }
+`);
+  
+  let searchResult = toolkit.findInterface(data, "MegaMod.Foo");
+  test.equal(searchResult.length, 1);
+  
+  test.done();
+}
