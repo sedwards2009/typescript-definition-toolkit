@@ -791,3 +791,84 @@ export function testFindInterface2(test: nodeunit.Test): void {
   
   test.done();
 }
+
+export function testResolveIdentifier(test: nodeunit.Test): void {
+  let data = toolkit.parse(`
+    declare module MegaMod {
+      interface Bar {
+      }
+      
+      interface Foo {
+      }
+      
+      interface Zyzz {
+      }
+    }
+`);
+  
+  const megaResult = toolkit.resolveIdentifier("MegaMod", [data]);
+  test.equal(megaResult.length, 1);
+  
+  const fooResult = toolkit.resolveIdentifier("Foo", megaResult[0].scope.concat( [megaResult[0].item] ));
+  test.equal(fooResult.length, 1);
+  
+  test.done();
+}
+
+export function testResolveIdentifier2(test: nodeunit.Test): void {
+  let data = toolkit.parse(`
+    declare module MegaMod {
+      
+      module MetaVars {
+        interface Bar {
+        }
+        
+        interface Foo {
+        }
+        
+        interface Zyzz {
+        }
+      }
+    }
+`);
+  
+  const megaResult = toolkit.resolveIdentifier("MegaMod", [data]);
+  test.equal(megaResult.length, 1);
+  const fooResult = toolkit.resolveIdentifier("MetaVars.Foo", megaResult[0].scope.concat( [megaResult[0].item] ) );
+  test.equal(fooResult.length, 1);
+  
+  test.done();
+}
+
+export function testResolveIdentifier3(test: nodeunit.Test): void {
+  let data = toolkit.parse(`
+    declare module MegaMod {
+      
+      module MetaVars {
+        interface Bar {
+        }
+        
+        interface Foo {
+        }
+        
+        interface Zyzz {
+        }
+      }
+      
+      module SideMod {
+        interface Foo extends SideBase {
+
+        }
+      }
+    }
+`);
+
+  const metaResult = toolkit.resolveIdentifier("MegaMod.MetaVars", [data]);
+  test.equal(metaResult.length, 1);
+  
+  const fooResult = toolkit.resolveIdentifier("SideMod.Foo", metaResult[0].scope);
+  test.equal(fooResult.length, 1);
+  test.equal( (<toolkit.Defs.Interface>fooResult[0].item).extends[0].name, "SideBase");
+  test.done();
+}
+

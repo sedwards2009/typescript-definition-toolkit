@@ -861,33 +861,74 @@ function toStringFunctionSignature(obj: Defs.Base, level: number=0,
   }
 }
 
+export type Scope = Defs.Base | Defs.Base[];
+
+export interface ScopedItem {
+  item: Defs.Base;
+  scope: Scope[];
+}
+
+export interface ScopedInterface {
+  item: Defs.Interface;
+  scope: Scope[];
+}
+
 /**
  * Find all interface declarations by path.
  * 
- * @param data list of Defs.Bases to scan through.
+ * @param scope list of Defs.Bases to scan through.
  * @param interfaceName Path to the desired interface. This is a dotted
  *     path which may traverse modules, interfaces and classes.
  * @return List of matches.
  */
-export function findInterface(data: Defs.Base[], interfaceName: string): Defs.Base[] {
-  return searchByPath(data, interfaceName).filter( inter => inter.type === Defs.Type.INTERFACE );
+export function findInterface(scope: Scope, interfaceName: string): ScopedInterface[] {
+  return <ScopedInterface[]> searchByPath(getScopeMembers(scope), interfaceName).filter(
+    inter => inter.item.type === Defs.Type.INTERFACE );
+}
+
+export interface ScopedClass {
+  item: Defs.Class;
+  scope: Scope[];
 }
 
 /**
  * Find all class declarations by path.
  * 
- * @param data list of Defs.Bases to scan through.
+ * @param scope list of Defs.Bases to scan through.
  * @param className Path to the desired class. This is a dotted
  *     path which may traverse modules, interfaces and classes.
  * @return List of matches.
  */
-export function findClass(data: Defs.Base[], className: string): Defs.Base[] {
-  return searchByPath(data, className).filter( inter => inter.type === Defs.Type.CLASS );
+export function findClass(scope: Defs.Base[], className: string): ScopedClass[] {
+  return <ScopedClass[]> searchByPath(getScopeMembers(scope), className).filter(
+    clazz => clazz.item.type === Defs.Type.CLASS );
 }
 
-function searchByPath(data: Defs.Base[], path: string): Defs.Base[] {
+function getScopeMembers(scope: Defs.Base[] | Defs.Base): Defs.Base[] {
+  if (Array.isArray(scope)) {
+    return <Defs.Base[]> scope;
+  } else {
+    const obj = <Defs.Base> scope;
+    switch(obj.type) {
+      
+      case Defs.Type.INTERFACE:
+        return (<Defs.Interface> obj).objectType.members;
+        
+      case Defs.Type.CLASS:
+        return (<Defs.Class> obj).objectType.members;
+        
+      case Defs.Type.MODULE:
+        return (<Defs.Module> obj).members;
+      
+      default:
+        return [];
+    }
+  }
+}
+
+function searchByPath(scope: Defs.Base[], path: string): ScopedItem[] {
   let parts = path.split(/\./g);
-  return searchByPathList(data, parts);
+  return searchByPathList(scope, parts);
 }
 
 /**
@@ -897,9 +938,9 @@ function searchByPath(data: Defs.Base[], path: string): Defs.Base[] {
  * @param pathList list of path names to match on.
  * @return List of matches.
  */
-function searchByPathList(data: Defs.Base[], pathList: string[]): Defs.Base[] {
+function searchByPathList(scope: Defs.Base[], pathList: string[]): ScopedItem[] {
   const first = pathList[0];
-  const found = data.filter( item => {
+  const found: ScopedItem[] = scope.filter( item => {
     switch(item.type) {
       case Defs.Type.MODULE:
         return (<Defs.Module> item).name === first;
@@ -916,29 +957,55 @@ function searchByPathList(data: Defs.Base[], pathList: string[]): Defs.Base[] {
       default:
         return false;
     }
-  });
+  }).map( x => ( { item: x, scope: [scope]} ) );
 
   if (pathList.length <= 1) {
     return found;
   } else {
     const rest = pathList.slice(1);
-    return found.map( item => {
-      switch(item.type) {
+    return found.map( match => {
+      switch(match.item.type) {
         case Defs.Type.MODULE:
-          return searchByPathList( (<Defs.Module> item).members, rest);
+          return searchByPathList( (<Defs.Module> match.item).members, rest);
           break;
           
         case Defs.Type.INTERFACE:
-          return searchByPathList( (<Defs.Interface> item).objectType.members, rest);
+          return searchByPathList( (<Defs.Interface> match.item).objectType.members, rest);
           break;
           
         case Defs.Type.CLASS:
-          return searchByPathList( (<Defs.Class> item).objectType.members, rest);
+          return searchByPathList( (<Defs.Class> match.item).objectType.members, rest);
           break;
           
         default:
           return [];
       }
-    }).reduce( (prev, current) => prev.concat(current), []);
+    })
+    .reduce( (prev, current) => prev.concat(current), [])
+    .map( x => ( {item: x.item, scope: (<Scope[]> [scope]).concat(x.scope) } ) );
   }
 }
+
+/**
+ * Resolve an identifier in the context of a list of scopes.
+ * 
+ * @param identifier Dotted identifier name to resolve.
+ * @param scopes List of scopes to search through. The top level scopes
+ *   should be first in the list with smaller nested scopes following it.
+ * @return List of matches.
+ */
+export function resolveIdentifier(identifier: string, scopes: (Defs.Base[] | Defs.Base)[]): ScopedItem[] {
+  const result: Defs.Base[] = [];
+  let i = scopes.length-1;
+  
+  while (i>=0) {
+    const scope = scopes[i];
+    const matches = searchByPath(getScopeMembers(scope), identifier);
+    if (matches.length !== 0) {
+      return matches;
+    }
+    i--;
+  }
+  return [];
+}
+
