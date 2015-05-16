@@ -22,7 +22,9 @@
     "url": "https://github.com/sedwards2009/typescript-definition-parser/issues"
   },
   "homepage": "https://github.com/sedwards2009/typescript-definition-parser",
-  "dependencies": {},
+  "dependencies": {
+    "lodash": "^3.8.0"
+  },
   "devDependencies": {
     "glob": "^5.0.5",
     "nodeunit": "^0.9.1",

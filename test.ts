@@ -872,3 +872,71 @@ export function testResolveIdentifier3(test: nodeunit.Test): void {
   test.done();
 }
 
+export function testFlattenInterface(test: nodeunit.Test): void {
+  let data = toolkit.parse(`
+  interface BarBase {
+    barBaseName: string;
+  }
+
+  
+  interface Fizzel {
+    fizzed(): boolean;
+  }
+  
+  interface Fizzel {
+    goFizz(): boolean;
+  }
+`);
+
+  const flatInterface = toolkit.flattenInterface("Fizzel", [data]);
+  test.equal(flatInterface.objectType.members.filter( x => x.type === toolkit.Defs.Type.METHOD ).length, 2);
+  test.done();
+}
+
+export function testFlattenInterface2(test: nodeunit.Test): void {
+  let data = toolkit.parse(`
+  interface BarBase {
+    barBaseName: string;
+  }
+  
+  interface ConcreteBar extends BarBase {
+    concretalize(): void;
+  }
+  
+  interface Fizzel extends ConcreteBar {
+    fizzed(): boolean;
+  }
+`);
+
+  const flatInterface = toolkit.flattenInterface("Fizzel", [data]);
+//  console.log(toolkit.toString(flatInterface));
+  test.equal(flatInterface.objectType.members.filter( x => x.type === toolkit.Defs.Type.METHOD ).length, 2);
+  test.equal(flatInterface.objectType.members.filter( x => x.type === toolkit.Defs.Type.PROPERTY ).length, 1);
+  test.done();
+}
+
+export function testFlattenInterface3(test: nodeunit.Test): void {
+  let data = toolkit.parse(`
+  interface BarBase {
+    barBaseName: string;
+  }
+  
+  interface ConcreteBar extends BarBase {
+    concretalize(): void;
+  }
+  
+  interface Mixy {
+    mixIt(): boolean;
+  }
+  
+  interface Fizzel extends ConcreteBar, Mixy {
+    fizzed(): boolean;
+  }
+`);
+
+  const flatInterface = toolkit.flattenInterface("Fizzel", [data]);
+//  console.log(toolkit.toString(flatInterface));
+  test.equal(flatInterface.objectType.members.filter( x => x.type === toolkit.Defs.Type.METHOD ).length, 3);
+  test.equal(flatInterface.objectType.members.filter( x => x.type === toolkit.Defs.Type.PROPERTY ).length, 1);
+  test.done();
+}

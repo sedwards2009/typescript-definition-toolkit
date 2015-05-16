@@ -15,7 +15,7 @@
  */
 "use strict";
 
-import nodeunit = require("nodeunit");
+import _ = require("lodash");
 import typescript_definition = require("./typescript_definition");
 
 export module Defs {
@@ -899,12 +899,12 @@ export interface ScopedClass {
  *     path which may traverse modules, interfaces and classes.
  * @return List of matches.
  */
-export function findClass(scope: Defs.Base[], className: string): ScopedClass[] {
+export function findClass(scope: Scope, className: string): ScopedClass[] {
   return <ScopedClass[]> searchByPath(getScopeMembers(scope), className).filter(
     clazz => clazz.item.type === Defs.Type.CLASS );
 }
 
-function getScopeMembers(scope: Defs.Base[] | Defs.Base): Defs.Base[] {
+function getScopeMembers(scope: Scope): Defs.Base[] {
   if (Array.isArray(scope)) {
     return <Defs.Base[]> scope;
   } else {
@@ -994,7 +994,7 @@ function searchByPathList(scope: Defs.Base[], pathList: string[]): ScopedItem[] 
  *   should be first in the list with smaller nested scopes following it.
  * @return List of matches.
  */
-export function resolveIdentifier(identifier: string, scopes: (Defs.Base[] | Defs.Base)[]): ScopedItem[] {
+export function resolveIdentifier(identifier: string, scopes: Scope[]): ScopedItem[] {
   const result: Defs.Base[] = [];
   let i = scopes.length-1;
   
@@ -1009,3 +1009,46 @@ export function resolveIdentifier(identifier: string, scopes: (Defs.Base[] | Def
   return [];
 }
 
+/**
+ * Flatten an interface and superinterfaces into one independent interface declaration.
+ * 
+ * This does not modify the source data structure.
+ * 
+ * @param identifier Dotted identifier name to resolve.
+ * @param scopes List of scopes to search through. The top level scopes
+ *   should be first in the list with smaller nested scopes following it.
+ * @return The flattened interface declaration. 
+ */
+export function flattenInterface(identifier: string, scopes: Scope[]): Defs.Interface {
+  const interfaceMatches = resolveIdentifier(identifier, scopes);
+  let result: Defs.Interface = null;
+  
+  const pathParts = identifier.split(/\./g);
+  const name = pathParts[pathParts.length-1];
+  const body: Defs.ObjectType = { type: Defs.Type.OBJECT_TYPE, members: [] };
+  
+  result = {type: Defs.Type.INTERFACE, ambient: true, name: name, typeParameters: [], extends: [],
+    export: false, objectType: body };
+    
+  interfaceMatches.forEach( inter => {
+    const copy = _.cloneDeep(inter.item);
+    body.members = body.members.concat( (<Defs.Interface> copy).objectType.members);
+  });
+
+  // Merge in each super interface.
+  interfaceMatches.forEach( match => {
+    const inter = <Defs.Interface> match.item;
+    inter.extends.forEach( extendsItem => {
+      const flatExtends = flattenInterface(extendsItem.name, match.scope);
+      const copyMembers = _.cloneDeep(flatExtends.objectType.members);
+      
+      const comment: Defs.WhiteSpace = { type: Defs.Type.WHITESPACE,value: "// " + extendsItem.name + "\n"};
+      body.members.push(comment);
+      
+      body.members = body.members.concat(copyMembers);
+    });
+
+  });
+
+  return result;
+}
