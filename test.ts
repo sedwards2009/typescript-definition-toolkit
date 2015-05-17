@@ -809,7 +809,7 @@ export function testResolveIdentifier(test: nodeunit.Test): void {
   const megaResult = toolkit.resolveIdentifier("MegaMod", [data]);
   test.equal(megaResult.length, 1);
   
-  const fooResult = toolkit.resolveIdentifier("Foo", megaResult[0].scope.concat( [megaResult[0].item] ));
+  const fooResult = toolkit.resolveIdentifier("Foo", megaResult[0].scopes.concat( [megaResult[0].item] ));
   test.equal(fooResult.length, 1);
   
   test.done();
@@ -834,7 +834,7 @@ export function testResolveIdentifier2(test: nodeunit.Test): void {
   
   const megaResult = toolkit.resolveIdentifier("MegaMod", [data]);
   test.equal(megaResult.length, 1);
-  const fooResult = toolkit.resolveIdentifier("MetaVars.Foo", megaResult[0].scope.concat( [megaResult[0].item] ) );
+  const fooResult = toolkit.resolveIdentifier("MetaVars.Foo", megaResult[0].scopes.concat( [megaResult[0].item] ) );
   test.equal(fooResult.length, 1);
   
   test.done();
@@ -865,8 +865,7 @@ export function testResolveIdentifier3(test: nodeunit.Test): void {
 
   const metaResult = toolkit.resolveIdentifier("MegaMod.MetaVars", [data]);
   test.equal(metaResult.length, 1);
-  
-  const fooResult = toolkit.resolveIdentifier("SideMod.Foo", metaResult[0].scope);
+  const fooResult = toolkit.resolveIdentifier("SideMod.Foo", metaResult[0].scopes);
   test.equal(fooResult.length, 1);
   test.equal( (<toolkit.Defs.Interface>fooResult[0].item).extends[0].name, "SideBase");
   test.done();
@@ -938,5 +937,109 @@ export function testFlattenInterface3(test: nodeunit.Test): void {
 //  console.log(toolkit.toString(flatInterface));
   test.equal(flatInterface.objectType.members.filter( x => x.type === toolkit.Defs.Type.METHOD ).length, 3);
   test.equal(flatInterface.objectType.members.filter( x => x.type === toolkit.Defs.Type.PROPERTY ).length, 1);
+  test.done();
+}
+
+export function testFlattenInterface4(test: nodeunit.Test): void {
+  let data = toolkit.parse(`
+  declare module Extras {
+    interface Mixy {
+      mixIt(): Rabbit;
+    }
+    interface Rabbit {
+    
+    }
+  }
+  
+  interface Fizzel extends Extras.Mixy {
+    fizzed(): boolean;
+  }
+`);
+
+  const flatInterface = toolkit.flattenInterface("Fizzel", [data]);
+  test.equal(flatInterface.objectType.members.filter( x => x.type === toolkit.Defs.Type.METHOD ).length, 2);
+  const mixIt = flatInterface.objectType.members.filter( x => x.type === toolkit.Defs.Type.METHOD &&
+      (<toolkit.Defs.Method> x).name === "mixIt");
+  test.equal(mixIt.length, 1);
+  test.equal( (<toolkit.Defs.ObjectTypeRef> (<toolkit.Defs.Method>mixIt[0]).signature.returnType).name, "Extras.Rabbit");
+  test.done();
+}
+
+export function testExpandTypeReferencesReturnType(test: nodeunit.Test): void {
+  let data = toolkit.parse(`
+  declare module Extras {
+    interface Mixy {
+      mixIt(): Rabbit;
+    }
+    interface Rabbit {
+    }
+  }  
+`);
+
+  const mixy = toolkit.resolveIdentifier("Extras.Mixy", [data]);
+  const expanded = <toolkit.Defs.Interface> toolkit.expandTypeReferences(mixy[0].item, mixy[0].scopes);
+  const methods = <toolkit.Defs.Method[]> expanded.objectType.members.filter( m => m.type === toolkit.Defs.Type.METHOD );
+  test.equal(methods.length, 1);
+  test.equal( (<toolkit.Defs.ObjectTypeRef>methods[0].signature.returnType).name, "Extras.Rabbit");
+  test.done();
+}
+
+export function testExpandTypeReferencesParameter(test: nodeunit.Test): void {
+  let data = toolkit.parse(`
+  declare module Extras {
+    interface Mixy {
+      inject(x: Rabbit): Rabbit;
+    }
+    interface Rabbit {
+    }
+  }  
+`);
+
+  const mixy = toolkit.resolveIdentifier("Extras.Mixy", [data]);
+  const expanded = <toolkit.Defs.Interface> toolkit.expandTypeReferences(mixy[0].item, mixy[0].scopes);
+  const methods = <toolkit.Defs.Method[]> expanded.objectType.members.filter( m => m.type === toolkit.Defs.Type.METHOD );
+  test.equal(methods.length, 1);
+  test.equal( (<toolkit.Defs.ObjectTypeRef>methods[0].signature.parameters[0].parameterType).name, "Extras.Rabbit");
+  test.done();
+}
+
+export function testExpandTypeReferencesProperty(test: nodeunit.Test): void {
+  let data = toolkit.parse(`
+  declare module Extras {
+    interface Mixy {
+      bunny: Rabbit;
+    }
+    interface Rabbit {
+    }
+  }  
+`);
+
+  const mixy = toolkit.resolveIdentifier("Extras.Mixy", [data]);
+  const expanded = <toolkit.Defs.Interface> toolkit.expandTypeReferences(mixy[0].item, mixy[0].scopes);
+  const properties = <toolkit.Defs.Property[]> expanded.objectType.members.filter( m => m.type === toolkit.Defs.Type.PROPERTY );
+  test.equal(properties.length, 1);
+  test.equal( (<toolkit.Defs.ObjectTypeRef>properties[0].signature).name, "Extras.Rabbit");
+  test.done();
+}
+
+export function testExpandTypeReferencesObjectType(test: nodeunit.Test): void {
+  let data = toolkit.parse(`
+  declare module Extras {
+    interface Mixy {
+      bunny: { foo: Rabbit; bar: Rabbit };
+    }
+    interface Rabbit {
+    }
+  }  
+`);
+
+  const mixy = toolkit.resolveIdentifier("Extras.Mixy", [data]);
+  const expanded = <toolkit.Defs.Interface> toolkit.expandTypeReferences(mixy[0].item, mixy[0].scopes);
+  const properties = <toolkit.Defs.Property[]> expanded.objectType.members.filter( m => m.type === toolkit.Defs.Type.PROPERTY );
+  test.equal(properties.length, 1);
+  const objectMembers = (<toolkit.Defs.ObjectType>properties[0].signature).members;
+  test.equal(objectMembers.length, 4);
+  test.equal( (<toolkit.Defs.ObjectTypeRef>(<toolkit.Defs.Property>objectMembers[1]).signature).name, "Extras.Rabbit");
+  "Extras.Rabbit"
   test.done();
 }

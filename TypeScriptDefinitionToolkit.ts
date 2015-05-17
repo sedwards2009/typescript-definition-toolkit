@@ -865,12 +865,12 @@ export type Scope = Defs.Base | Defs.Base[];
 
 export interface ScopedItem {
   item: Defs.Base;
-  scope: Scope[];
+  scopes: Scope[];
 }
 
 export interface ScopedInterface {
   item: Defs.Interface;
-  scope: Scope[];
+  scopes: Scope[];
 }
 
 /**
@@ -888,7 +888,7 @@ export function findInterface(scope: Scope, interfaceName: string): ScopedInterf
 
 export interface ScopedClass {
   item: Defs.Class;
-  scope: Scope[];
+  scopes: Scope[];
 }
 
 /**
@@ -926,7 +926,7 @@ function getScopeMembers(scope: Scope): Defs.Base[] {
   }
 }
 
-function searchByPath(scope: Defs.Base[], path: string): ScopedItem[] {
+function searchByPath(scope: Scope, path: string): ScopedItem[] {
   let parts = path.split(/\./g);
   return searchByPathList(scope, parts);
 }
@@ -934,13 +934,13 @@ function searchByPath(scope: Defs.Base[], path: string): ScopedItem[] {
 /**
  * Find objects by path.
  *
- * @param data list of Defs.Bases to scan.
+ * @param scope the scope to scan down through
  * @param pathList list of path names to match on.
  * @return List of matches.
  */
-function searchByPathList(scope: Defs.Base[], pathList: string[]): ScopedItem[] {
+function searchByPathList(scope: Scope, pathList: string[]): ScopedItem[] {
   const first = pathList[0];
-  const found: ScopedItem[] = scope.filter( item => {
+  const found: ScopedItem[] = getScopeMembers(scope).filter( item => {
     switch(item.type) {
       case Defs.Type.MODULE:
         return (<Defs.Module> item).name === first;
@@ -957,32 +957,26 @@ function searchByPathList(scope: Defs.Base[], pathList: string[]): ScopedItem[] 
       default:
         return false;
     }
-  }).map( x => ( { item: x, scope: [scope]} ) );
+  }).map( x => ( { item: x, scopes: [scope]} ) );
 
   if (pathList.length <= 1) {
     return found;
   } else {
     const rest = pathList.slice(1);
     return found.map( match => {
-      switch(match.item.type) {
-        case Defs.Type.MODULE:
-          return searchByPathList( (<Defs.Module> match.item).members, rest);
-          break;
-          
-        case Defs.Type.INTERFACE:
-          return searchByPathList( (<Defs.Interface> match.item).objectType.members, rest);
-          break;
-          
-        case Defs.Type.CLASS:
-          return searchByPathList( (<Defs.Class> match.item).objectType.members, rest);
-          break;
-          
-        default:
-          return [];
-      }
-    })
-    .reduce( (prev, current) => prev.concat(current), [])
-    .map( x => ( {item: x.item, scope: (<Scope[]> [scope]).concat(x.scope) } ) );
+        switch(match.item.type) {
+          case Defs.Type.MODULE:
+          case Defs.Type.INTERFACE:
+          case Defs.Type.CLASS:
+            return searchByPathList(match.item, rest);
+            break;
+            
+          default:
+            return [];
+        }
+      })
+      .reduce( (prev, current) => prev.concat(current), [])
+      .map( x => ( {item: x.item, scopes: (<Scope[]> [scope]).concat(x.scopes) } ) );
   }
 }
 
@@ -1000,9 +994,9 @@ export function resolveIdentifier(identifier: string, scopes: Scope[]): ScopedIt
   
   while (i>=0) {
     const scope = scopes[i];
-    const matches = searchByPath(getScopeMembers(scope), identifier);
+    const matches = searchByPath(scope, identifier);
     if (matches.length !== 0) {
-      return matches;
+      return matches.map( m => ( {item: m.item, scopes: scopes.slice(0,i).concat(m.scopes) } ) );
     }
     i--;
   }
@@ -1030,25 +1024,152 @@ export function flattenInterface(identifier: string, scopes: Scope[]): Defs.Inte
   result = {type: Defs.Type.INTERFACE, ambient: true, name: name, typeParameters: [], extends: [],
     export: false, objectType: body };
     
+  // Concatinate the members of each matched interface making sure to expand an type references to fully qualified references
   interfaceMatches.forEach( inter => {
-    const copy = _.cloneDeep(inter.item);
-    body.members = body.members.concat( (<Defs.Interface> copy).objectType.members);
+    const interfaceCopy = _.cloneDeep(inter.item);
+    expandTypeReferencesInPlace(interfaceCopy, inter.scopes);
+    body.members = body.members.concat( (<Defs.Interface> interfaceCopy).objectType.members);
   });
 
   // Merge in each super interface.
   interfaceMatches.forEach( match => {
     const inter = <Defs.Interface> match.item;
     inter.extends.forEach( extendsItem => {
-      const flatExtends = flattenInterface(extendsItem.name, match.scope);
-      const copyMembers = _.cloneDeep(flatExtends.objectType.members);
+      const flatExtends = flattenInterface(extendsItem.name, match.scopes);
+      const members = flatExtends.objectType.members;
       
       const comment: Defs.WhiteSpace = { type: Defs.Type.WHITESPACE,value: "// " + extendsItem.name + "\n"};
       body.members.push(comment);
       
-      body.members = body.members.concat(copyMembers);
+      body.members = body.members.concat(members);
     });
 
   });
 
   return result;
+}
+
+export function expandTypeReferences(obj: Defs.Base, scopes: Scope[]): Defs.Base {
+  const copy: Defs.Base = _.cloneDeep(obj);
+  return expandTypeReferencesInPlace(copy, scopes);
+}
+
+function expandTypeReferencesInPlace(obj: Defs.Base, scopes: Scope[]): Defs.Base {
+  switch (obj.type) {
+    
+    case Defs.Type.MODULE:
+      const mod = <Defs.Module> obj;
+      mod.members = mod.members.map( m => expandTypeReferencesInPlace(m, scopes) );
+      return mod;
+
+    case Defs.Type.INTERFACE:
+      const inter: Defs.Interface = <Defs.Interface> obj;
+      inter.extends = inter.extends.map( item => <Defs.ObjectTypeRef> expandTypeReferencesInPlace(item, scopes) );
+      inter.objectType = <Defs.ObjectType> expandTypeReferencesInPlace(inter.objectType, scopes.concat( [inter] ) );
+      return inter;
+
+    case Defs.Type.CLASS:
+      const class_ = <Defs.Class> obj;
+      class_.extends = <Defs.ObjectTypeRef> expandTypeReferencesInPlace(class_.extends, scopes);
+      class_.objectType = <Defs.ObjectType> expandTypeReferencesInPlace(class_.objectType, scopes.concat( [class_] ) );
+      return class_;
+        
+    case Defs.Type.OBJECT_TYPE_REF:
+      const objectTypeRef = <Defs.ObjectTypeRef> obj;
+      const resolved = resolveIdentifier(objectTypeRef.name, scopes);
+      if (resolved.length === 0) {
+        return obj;
+      }
+      const path = scopesToPath(resolved[0].scopes);
+      objectTypeRef.name = (path === "" ? "" : path + ".") + objectTypeRef.name;
+      return objectTypeRef;
+    
+    case Defs.Type.OBJECT_TYPE:
+      const objectType = <Defs.ObjectType> obj;
+      objectType.members = objectType.members.map( m => expandTypeReferencesInPlace(m, scopes) );
+      return objectType;
+      
+    case Defs.Type.METHOD:
+      const method = <Defs.Method> obj;
+      method.signature = <Defs.FunctionType> expandTypeReferencesInPlace(method.signature, scopes);
+      return method;
+      
+    case Defs.Type.PARAMETER:
+      const param = <Defs.Parameter> obj;
+      param.parameterType = expandTypeReferencesInPlace(param.parameterType, scopes);
+      return param;
+      
+    case Defs.Type.PROPERTY:
+      const prop = <Defs.Property> obj;
+      prop.signature = expandTypeReferencesInPlace(prop.signature, scopes);
+      return prop;
+      
+    case Defs.Type.INDEX_METHOD:
+      const indexMethod = <Defs.IndexMethod> obj;
+      indexMethod.returnType = expandTypeReferencesInPlace(indexMethod.returnType, scopes);
+      return indexMethod;
+      
+    case Defs.Type.FUNCTION:
+      const function_ = <Defs.Function> obj;
+      function_.signature = <Defs.FunctionType> expandTypeReferencesInPlace(function_.signature, scopes);
+      return function_;
+        
+    case Defs.Type.FUNCTION_TYPE:
+      const functionType = <Defs.FunctionType> obj;
+      functionType.parameters = <Defs.Parameter[]> functionType.parameters.map( p => expandTypeReferencesInPlace(p, scopes) );
+      functionType.returnType = expandTypeReferencesInPlace(functionType.returnType, scopes);
+      return functionType;
+      
+    case Defs.Type.TUPLE_TYPE:
+      const tupleType = <Defs.TupleType> obj;
+      tupleType.members = tupleType.members.map( m => expandTypeReferencesInPlace(m, scopes) );
+      return tupleType;
+      
+    case Defs.Type.UNION_TYPE:
+      const unionType = <Defs.TupleType> obj;
+      unionType.members = unionType.members.map( m => expandTypeReferencesInPlace(m, scopes) );
+      return unionType;
+      
+    case Defs.Type.ARRAY_TYPE:
+      const arrayType = <Defs.ArrayType> obj;
+      arrayType.member = expandTypeReferencesInPlace(arrayType.member, scopes);
+      return arrayType;
+      
+    case Defs.Type.TYPE_ALIAS:
+      const typeAlias = <Defs.TypeAlias> obj;
+      typeAlias.entity = <Defs.ObjectType | Defs.ObjectTypeRef> expandTypeReferencesInPlace(typeAlias.entity, scopes);
+      return typeAlias;
+    
+    case Defs.Type.AMBIENT_VARIABLE:
+      const ambientVariable = <Defs.Variable> obj;
+      ambientVariable.signature = expandTypeReferencesInPlace(ambientVariable.signature, scopes);
+      return ambientVariable;
+      
+    case Defs.Type.CONSTRUCTOR_TYPE:
+      const constructorType = <Defs.ConstructorType> obj;
+      constructorType.returnType = expandTypeReferencesInPlace(constructorType.returnType, scopes);
+      constructorType.parameters = <Defs.Parameter[]> constructorType.parameters.map( p => expandTypeReferencesInPlace(p, scopes) );
+      return constructorType;
+      
+    default:
+      break;
+  }
+  
+  return obj;
+}
+
+function scopesToPath(scopes: Scope[]): string {
+  const objectScopes = <Defs.Base[]> scopes.filter( (s) => ! Array.isArray(s) );
+  return objectScopes.map( s => {
+    switch(s.type) {
+      case Defs.Type.MODULE:
+        return (<Defs.Module>s).name;
+      case Defs.Type.CLASS:
+        return (<Defs.Class>s).name;
+      case Defs.Type.INTERFACE:
+        return (<Defs.Interface>s).name;
+      default:
+        return "";
+    }
+  } ).join(".");
 }
