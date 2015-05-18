@@ -527,7 +527,8 @@ function_type
 constructor_type
     = NEW _ typeParameters:type_parameters? _ LBRACKET _ parameterList:parameter_list? _ RBRACKET _ ARROW _ type:type
     {
-      return { type: CONSTRUCTOR_TYPE, typeParameters: typeParameters, parameters: parameterList || [], returnType: type };
+      return { type: CONSTRUCTOR_TYPE, signature:
+        { type: FUNCTION_TYPE, typeParameters: typeParameters, parameters: parameterList || [], returnType: type } };
     }
 
 type_query

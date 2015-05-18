@@ -307,19 +307,9 @@ export module Defs {
    */
   export interface ConstructorType extends PrimaryType {
     /**
-     * List of parameters for generics.
+     * The constructor signature.
      */
-    typeParameters: TypeParameter[];
-
-    /**
-     * Return type.
-     */
-    returnType: PrimaryType;
-    
-    /**
-     * List of parameters
-     */
-    parameters: Parameter[];
+    signature: FunctionType;
   }
   
   /**
@@ -332,7 +322,6 @@ export module Defs {
     member: PrimaryType;
   }
   
-  // FIXME add an array type??
   // -- end types.
   
   /**
@@ -808,19 +797,19 @@ export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, in
         break;
         
       case Defs.Type.CONSTRUCTOR_TYPE:
-        let constructorType = <Defs.FunctionType> obj;
+        let constructorType = <Defs.ConstructorType> obj;
 
         result = "new";
-        if (constructorType.typeParameters !== null && constructorType.typeParameters.length !==0) {
+        if (constructorType.signature.typeParameters !== null && constructorType.signature.typeParameters.length !==0) {
           result += "<";
-          result += constructorType.typeParameters.map( (p) => toString(p) ).join(", ");
+          result += constructorType.signature.typeParameters.map( (p) => toString(p) ).join(", ");
           result += ">";
         }
         
         result += "(";
-        result += constructorType.parameters.map( (p) => toString(p, level, indent) ).join(", ");
+        result += constructorType.signature.parameters.map( (p) => toString(p, level, indent) ).join(", ");
         result += ")";
-        result += (constructorType.returnType !== null ? (" => "+ toString(constructorType.returnType)) : "");
+        result += (constructorType.signature.returnType !== null ? (" => "+ toString(constructorType.signature.returnType)) : "");
         return result;
         break;
 
@@ -1147,8 +1136,7 @@ function expandTypeReferencesInPlace(obj: Defs.Base, scopes: Scope[]): Defs.Base
       
     case Defs.Type.CONSTRUCTOR_TYPE:
       const constructorType = <Defs.ConstructorType> obj;
-      constructorType.returnType = expandTypeReferencesInPlace(constructorType.returnType, scopes);
-      constructorType.parameters = <Defs.Parameter[]> constructorType.parameters.map( p => expandTypeReferencesInPlace(p, scopes) );
+      constructorType.signature = <Defs.FunctionType> expandTypeReferencesInPlace(constructorType.signature, scopes);
       return constructorType;
       
     default:
