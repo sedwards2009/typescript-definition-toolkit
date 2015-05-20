@@ -1,5 +1,5 @@
 # typescript-definition-toolkit
-A simple parser and toolkit for TypeScript definition files for use by people who want to mangle and transform .d.ts files.
+A simple parser and library for TypeScript definition aimed at people who want to mangle and transform .d.ts files.
 
 Features:
 * Can parse TypeScript definition files. :thumbsup:
