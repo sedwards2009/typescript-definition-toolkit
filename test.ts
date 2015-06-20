@@ -711,6 +711,12 @@ export function testInterfaceDirectCallMissingSemi(test: nodeunit.Test): void {
 }`);
 }
 
+export function testParameterCallSignature(test: nodeunit.Test): void {
+  roundTrip(test, `interface JSON {
+    parse(text: string, reviver?: (key: any, value: any) => any): any;
+}`);
+}
+
 export function testCallSignature(test: nodeunit.Test): void {
   parseTest(test, `declare var smeg: { ():string; };`);
 }

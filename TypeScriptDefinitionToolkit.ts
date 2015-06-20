@@ -654,7 +654,7 @@ export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, in
         let param = <Defs.Parameter> obj;
         return (param.rest ? "..." : "") + param.name +
                 (param.required === false && param.rest === false ? "?" :"") +
-                (param.parameterType !== null ? ": " + toString(param.parameterType) : "");
+                (param.parameterType !== null ? ": " + toStringFunctionSignature(param.parameterType) : "");
         break;
         
       case Defs.Type.OBJECT_TYPE:
@@ -819,7 +819,7 @@ export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, in
 
 function listToString(obj: Defs.Base[], level: number=0, indent: string = "    "): string {
   if (obj === null) {
-    return "";
+     return "";
   }
   return obj.map( (item) => toString(item, level, indent) ).join("");
 }
