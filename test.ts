@@ -313,6 +313,16 @@ export function testInterfaceNew4(test: nodeunit.Test): void {
 }`);
 }
 
+export function testInterfaceNew5(test: nodeunit.Test): void {
+  roundTrip(test, `export interface ObjectConstructor {
+  new (value?: any): Object;
+  (): any;
+  (value: any): any;
+  foo(): void;
+}
+`);
+}
+
 export function testInterfaceDefault(test: nodeunit.Test): void {
   roundTrip(test, `export interface Baz {
   ();
