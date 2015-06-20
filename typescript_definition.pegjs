@@ -552,10 +552,10 @@ property_name
     / Numeric
 
 call_signature
-    = type_parameters:type_parameters? _ LBRACKET _ parameters:parameter_list? _ RBRACKET type_annotation:(_ type_annotation)?
+    = type_parameters:(type_parameters _)? LBRACKET _ parameters:parameter_list? _ RBRACKET type_annotation:(_ type_annotation)?
         {
-          return {type: FUNCTION_TYPE, typeParameters: type_parameters, parameters: parameters || [],
-            returnType: type_annotation !== null ? type_annotation[1] : null };
+          return {type: FUNCTION_TYPE, typeParameters: type_parameters !== null ? type_parameters[0] : null,
+            parameters: parameters || [], returnType: type_annotation !== null ? type_annotation[1] : null };
         }
 
 parameter_list
@@ -658,10 +658,10 @@ rest_parameter
       }
 
 construct_signature
-    = NEW _ type_parameters:type_parameters? _ LBRACKET _ parameters:parameter_list? _ RBRACKET _ type_annotation:type_annotation?
+    = NEW _ type_parameters:type_parameters? _ LBRACKET _ parameters:parameter_list? _ RBRACKET type_annotation:(_ type_annotation)?
     {
       return { type: METHOD, name: "new", optional: false, static: false, accessibility: null,
-        signature:  {type: FUNCTION_TYPE, typeParameters: type_parameters, parameters: parameters || [], returnType: type_annotation } };
+        signature:  {type: FUNCTION_TYPE, typeParameters: type_parameters, parameters: parameters || [], returnType: type_annotation !== null ? type_annotation[1] : null } };
     }
 
 index_signature
