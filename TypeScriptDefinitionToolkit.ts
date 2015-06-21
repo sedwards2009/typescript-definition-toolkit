@@ -691,7 +691,7 @@ export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, in
         
       case Defs.Type.TYPE_ALIAS:
         let typeAlias = <Defs.TypeAlias> obj;
-        return dent + (typeAlias.ambient ? "declare " : "") + "type " + typeAlias.name + " = " + toString(typeAlias.entity) + ";";
+        return dent + (typeAlias.ambient ? "declare " : "") + "type " + typeAlias.name + " = " + toStringFunctionSignature(typeAlias.entity) + ";";
         break;
         
       case Defs.Type.INDEX_METHOD:

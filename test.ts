@@ -1151,3 +1151,7 @@ export function testComputedProperty(test: nodeunit.Test): void {
 }
 `);
 }
+
+export function testTypeWithArrow(test: nodeunit.Test): void {
+  roundTrip(test, `declare type ClassDecorator = <TFunction extends Function>(target: TFunction) => TFunction|void;`);
+}
