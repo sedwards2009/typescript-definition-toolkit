@@ -550,6 +550,10 @@ property_name
       return '"' + str + '"';
     }
     / Numeric
+    / LSQUARE name:type_name RSQUARE
+    {
+      return "[" + name + "]";
+    }
 
 call_signature
     = type_parameters:(type_parameters _)? LBRACKET _ parameters:parameter_list? _ RBRACKET type_annotation:(_ type_annotation)?

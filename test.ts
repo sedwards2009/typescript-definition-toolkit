@@ -1144,3 +1144,10 @@ export function testFindAllSubinterfaces(test: nodeunit.Test): void {
   test.equal( matches.length, 5);
   test.done();
 }
+
+export function testComputedProperty(test: nodeunit.Test): void {
+  roundTrip(test, `interface Symbol {
+   [Symbol.toStringTag]: string;
+}
+`);
+}
