@@ -58,6 +58,13 @@ export module Defs {
     type: Type;
   }
   
+  export interface NamedBase extends Base {
+    /**
+     * Name of the item.
+     */
+    name: string;
+  }
+  
   /**
    * White space and may be mixed with comments.
    */
@@ -71,12 +78,7 @@ export module Defs {
   /**
    * Module
    */
-  export interface Module extends Base {
-    /**
-     * Name of the module.
-     */
-    name: string;
-    
+  export interface Module extends NamedBase {
     /**
      * True if this module is an ambient module.
      */
@@ -101,17 +103,12 @@ export module Defs {
   /**
    * Interface
    */
-  export interface Interface extends Base {
+  export interface Interface extends NamedBase {
     
     /**
      * True if this module is an ambient module.
      */
     ambient: boolean;
-    
-    /**
-     * Name of the interface.
-     */
-    name: string;
     
     /**
      * Type parameters for generics.
@@ -137,12 +134,7 @@ export module Defs {
   /**
    * Function
    */
-  export interface Function extends Base {
-    /**
-     * Name of the function.
-     */
-    name: string;
-    
+  export interface Function extends NamedBase {
     /**
      * Function signature.
      */
@@ -434,16 +426,11 @@ export module Defs {
   /**
    * Type alias
    */
-  export interface TypeAlias extends Base {   
+  export interface TypeAlias extends NamedBase {
     /**
      * True if this type alias is an ambient.
      */
     ambient: boolean;
-    
-    /**
-     * Name of the type alias.
-     */
-    name: string;
     
     /**
      * The type this type alias represents.
@@ -467,7 +454,7 @@ export module Defs {
   /**
    * Variable
    */
-  export interface Variable extends Base {
+  export interface Variable extends NamedBase {
     /**
      * True if this variable and needs the declare keyword.
      */
@@ -484,16 +471,11 @@ export module Defs {
   /**
    * Class
    */
-  export interface Class extends Base {
+  export interface Class extends NamedBase {
     /**
      * True if this class is ambient.
      */
     ambient: boolean;
-    
-    /**
-     * Name of the class.
-     */
-    name: string;
     
     /**
      * Type parameters for generics.
@@ -521,7 +503,7 @@ export module Defs {
   /**
    * Enum 
    */
-  export interface Enum extends Base {
+  export interface Enum extends NamedBase {
     /**
      * True if this class is ambient.
      */
@@ -541,11 +523,6 @@ export module Defs {
      * The list of enum members.
      */
     members: EnumMember[];
-    
-    /**
-     * Name of the enum.
-     */
-    name: string;
   }
   
   /**
@@ -853,7 +830,7 @@ function toStringFunctionSignature(obj: Defs.Base, level: number=0,
 export type Scope = Defs.Base | Defs.Base[];
 
 export interface ScopedItem {
-  item: Defs.Base;
+  item: Defs.NamedBase;
   scopes: Scope[];
 }
 
@@ -893,6 +870,24 @@ export function findClass(scope: Scope, className: string): ScopedClass[] {
     clazz => clazz.item.type === Defs.Type.CLASS );
 }
 
+export interface ScopedVariable {
+  item: Defs.Variable;
+  scopes: Scope[];
+}
+
+/**
+ * Find all variable declarations by path.
+ * 
+ * @param scope list of Defs.Bases to scan through.
+ * @param className Path to the desired variable. This is a dotted
+ *     path which may traverse modules, interfaces and classes.
+ * @return List of matches.
+ */
+export function findVariable(scope: Scope, variableName: string): ScopedVariable[] {
+  return <ScopedVariable[]> searchByPath(getScopeMembers(scope), variableName).filter(
+    variable => variable.item.type === Defs.Type.AMBIENT_VARIABLE );
+}
+
 function getScopeMembers(scope: Scope): Defs.Base[] {
   if (Array.isArray(scope)) {
     return <Defs.Base[]> scope;
@@ -929,7 +924,7 @@ function searchByPath(scope: Scope, path: string): ScopedItem[] {
  */
 function searchByPathList(scope: Scope, pathList: string[]): ScopedItem[] {
   const first = pathList[0];
-  const found: ScopedItem[] = getScopeMembers(scope).filter( item => {
+  const found: ScopedItem[] = (<Defs.NamedBase[]> getScopeMembers(scope)).filter( item => {
     switch(item.type) {
       case Defs.Type.MODULE:
         return (<Defs.Module> item).name === first;
@@ -941,6 +936,10 @@ function searchByPathList(scope: Scope, pathList: string[]): ScopedItem[] {
         
       case Defs.Type.CLASS:
         return (<Defs.Class> item).name === first;
+        break;
+        
+      case Defs.Type.AMBIENT_VARIABLE:
+        return (<Defs.Variable> item).name === first;
         break;
         
       default:
@@ -992,6 +991,11 @@ export function resolveIdentifier(identifier: string, scopes: Scope[]): ScopedIt
   return [];
 }
 
+function resolveInterfaceName(interfaceName: string, scopes: Scope[]): ScopedInterface[] {
+  return <ScopedInterface[]> resolveIdentifier(interfaceName, scopes).filter(
+    si => si.item.type === Defs.Type.INTERFACE );
+}
+
 /**
  * Flatten an interface and superinterfaces into one independent interface declaration.
  * 
@@ -1003,7 +1007,7 @@ export function resolveIdentifier(identifier: string, scopes: Scope[]): ScopedIt
  * @return The flattened interface declaration. 
  */
 export function flattenInterface(identifier: string, scopes: Scope[]): Defs.Interface {
-  const interfaceMatches = resolveIdentifier(identifier, scopes);
+  const interfaceMatches = resolveInterfaceName(identifier, scopes);
   let result: Defs.Interface = null;
   
   const pathParts = identifier.split(/\./g);
@@ -1160,4 +1164,57 @@ function scopesToPath(scopes: Scope[]): string {
         return "";
     }
   } ).join(".");
+}
+
+/**
+ * Convert a scoped interface object to dotted path.
+ * 
+ * @param  scopedInterface
+ * @return Dotted path string.
+ */
+export function scopedItemToPath(scopedItem: ScopedItem): string {
+  const path = scopesToPath(scopedItem.scopes);
+  return path === "" ? scopedItem.item.name : path + "." + scopedItem.item.name;
+}
+
+/**
+ * 
+ */
+export function findAllSubinterfacesInScope(scopes: Scope[], interfaceName: string): ScopedInterface[] {  
+  const directSubinterfaces = findDirectSubinterfacesInScope(scopes, interfaceName);
+  const otherSubinterfaces = directSubinterfaces.map( scopedSubInterface => {
+    const subInterfaceName = scopedItemToPath(scopedSubInterface);
+    return findAllSubinterfacesInScope(scopes, subInterfaceName);
+  } ).reduce( (a,b) => a.concat(b), []);
+  
+  return [...directSubinterfaces, ...otherSubinterfaces];
+}
+
+/**
+ * Find direct subinterfaces of a interface in the scope.
+ * 
+ * @param  scopes        Scopes to search through.
+ * @param  interfaceName complete dotted path naming the superinterface.
+ * @return {ScopedInterface[]}               [description]
+ */
+export function findDirectSubinterfacesInScope(scopes: Scope[], interfaceName: string): ScopedInterface[] {
+  const members = getScopeMembers(scopes[scopes.length-1]);
+  const interfaceMembers = <Defs.Interface[]> members.filter( m => m.type === Defs.Type.INTERFACE );
+  const foundSubinterfaces = interfaceMembers.filter( iface => {
+    // Check each interface which this interface extends.
+    return iface.extends.some( superiface => {
+      // Map the interface being extended to an object and scope.
+      const superMatches = resolveIdentifier(superiface.name, [...scopes, iface]);
+      return superMatches.some( sm => scopedItemToPath(sm) === interfaceName);
+    });
+  });
+  
+  const scopedFoundSubinterfaces = foundSubinterfaces.map<ScopedInterface>(
+    (m): ScopedInterface => ({ item: <Defs.Interface>m, scopes: scopes }) );
+    
+  const moduleMembers = members.filter( m=> m.type === Defs.Type.MODULE );
+  const otherSubinterfaces = moduleMembers.map( m => {
+    return findDirectSubinterfacesInScope( [...scopes, m], interfaceName );
+  }).reduce( (a,b) => a.concat(b), []);
+  return [...scopedFoundSubinterfaces, ...otherSubinterfaces];
 }

@@ -1059,3 +1059,88 @@ export function testExpandTypeReferencesObjectType(test: nodeunit.Test): void {
   "Extras.Rabbit"
   test.done();
 }
+
+export function testScopedInterfaceToPath(test: nodeunit.Test): void {
+  let data = toolkit.parse(`
+  declare module Extras {
+    interface Mixy {
+      bunny: { foo: Rabbit; bar: Rabbit };
+    }
+    interface Rabbit {
+    }
+  }  
+`);
+
+  const mixy = toolkit.resolveIdentifier("Extras.Mixy", [data]);
+  test.equal(toolkit.scopedItemToPath(<toolkit.ScopedInterface>mixy[0]), "Extras.Mixy");
+  test.done();
+}
+
+export function testFindAllDirectSubinterfaces(test: nodeunit.Test): void {
+  const data = toolkit.parse(`
+  declare module Animal {
+    interface Rabbit {
+    }
+    interface Duck {
+      
+    }
+    interface Roger extends Rabbit{
+    }
+  }
+  interface Bugs extends Animal.Rabbit {
+    
+  }
+  interface Daffy extends Animal.Duck {
+    
+  }
+  
+  declare module Zoo {
+    module Savanna {
+      interface DesertHare extends Animal.Rabbit {
+        
+      }
+    }
+  }
+`);
+
+  const matches = toolkit.findDirectSubinterfacesInScope([data], "Animal.Rabbit");
+  test.equal( matches.length, 3);
+  test.done();
+}
+
+export function testFindAllSubinterfaces(test: nodeunit.Test): void {
+  const data = toolkit.parse(`
+  interface Mammal {
+    
+  }
+  declare module Animal {
+    interface Rabbit extends Mammal {
+    }
+    interface Duck {
+      
+    }
+    interface Roger extends Rabbit{
+    }
+  }
+  interface Bugs extends Animal.Rabbit {
+    
+  }
+  interface Daffy extends Animal.Duck {
+    
+  }
+  interface Sheep extends Mammal {
+    
+  }
+  declare module Zoo {
+    module Savanna {
+      interface DesertHare extends Animal.Rabbit {
+        
+      }
+    }
+  }
+`);
+
+  const matches = toolkit.findAllSubinterfacesInScope([data], "Mammal");
+  test.equal( matches.length, 5);
+  test.done();
+}
