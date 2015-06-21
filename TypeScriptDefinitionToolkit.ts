@@ -469,10 +469,10 @@ export module Defs {
    */
   export interface Variable extends Base {
     /**
-     * Name of the variable.
+     * True if this variable and needs the declare keyword.
      */
-    name: string;
-
+    ambient: boolean;
+    
     /**
      * The variable's type.
      * 
@@ -744,7 +744,7 @@ export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, in
         
       case Defs.Type.AMBIENT_VARIABLE:
         let ambientVariable = <Defs.Variable> obj;
-        return dent + "declare var " + ambientVariable.name +
+        return dent + (ambientVariable.ambient ? "declare " : "") + " var " + ambientVariable.name +
           (ambientVariable.signature === null ? "" : ": " + toStringFunctionSignature(ambientVariable.signature)) +  ";\n";
         break;
         

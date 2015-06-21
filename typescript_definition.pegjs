@@ -749,7 +749,7 @@ ambient_declaration
 ambient_variable_declaration
     = VAR _ name:Identifier type_annotation:(_ type_annotation)? _ SEMI?
     {
-      return {type: AMBIENT_VARIABLE, name:name, signature: type_annotation === null ? null : type_annotation[1] };
+      return {type: AMBIENT_VARIABLE, name:name, ambient: false, signature: type_annotation === null ? null : type_annotation[1] };
     }
 
 ambient_function_declaration
