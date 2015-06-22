@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "nodeunit test.js",
-    "make": "pegjs typescript_definition.pegjs typescript_definition.js && tsc"
+    "build": "pegjs typescript_definition.pegjs typescript_definition.js && tsc"
   },
   "repository": {
     "type": "git",
