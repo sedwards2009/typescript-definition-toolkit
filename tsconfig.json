@@ -11,10 +11,12 @@
     },
     "filesGlob": [
         "./**/*.ts",
-        "!./node_modules/**/*.ts"
+        "!./node_modules/**/*.ts",
+        "!./chrome_web_components/*.d.ts"
     ],
     "files": [
         "./TypeScriptDefinitionToolkit.ts",
+        "./chrome_web_components/generate.ts",
         "./definitely_tested.ts",
         "./test.ts",
         "./typescript_definition.d.ts",
