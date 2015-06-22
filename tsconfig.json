@@ -18,6 +18,7 @@
         "./TypeScriptDefinitionToolkit.ts",
         "./chrome_web_components/generate.ts",
         "./definitely_tested.ts",
+        "./source-map-support.d.ts",
         "./test.ts",
         "./typescript_definition.d.ts",
         "./typings/glob/glob.d.ts",
