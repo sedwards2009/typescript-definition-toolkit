@@ -42,6 +42,7 @@ var SPECIALIZED_SIGNATURE = 21;
 var TYPE_QUERY = 22;
 var CONSTRUCTOR_TYPE = 23;
 var ARRAY_TYPE = 24;
+var PARENTHESIZED_TYPE = 25;
 
 function convertArrayType(baseType, arrayParts) {
   if (arrayParts === null || arrayParts.length === 0) {
@@ -395,9 +396,9 @@ primary_type
     {
       return convertArrayType(tq, array);
     }
-    / name:parenthesized_type array:array_square !(_ ARROW) /* A parenthesized looks very similar to the start of function signature */
+    / pt:parenthesized_type array:array_square !(_ ARROW) /* A parenthesized looks very similar to the start of function signature */
     {
-      return convertArrayType({ type: OBJECT_TYPE_REF, name: name, typeArguments: null }, array);
+      return convertArrayType(pt, array);
     }
     / tr:type_reference array:array_square
     {
@@ -416,7 +417,7 @@ primary_type
 parenthesized_type
     = LBRACKET _ type:type _ RBRACKET
     {
-      return type;
+      return { type: PARENTHESIZED_TYPE, member: type};
     }
 
 type_reference

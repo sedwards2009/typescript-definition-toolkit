@@ -48,7 +48,8 @@ export module Defs {
     SPECIALIZED_SIGNATURE = 21,
     TYPE_QUERY = 22,
     CONSTRUCTOR_TYPE = 23,
-    ARRAY_TYPE = 24
+    ARRAY_TYPE = 24,
+    PARENTHESIZED_TYPE = 25
   }
   
   /**
@@ -313,6 +314,16 @@ export module Defs {
      */
     member: PrimaryType;
   }
+
+  /**
+   * Parenthesized type.
+   */
+  export interface ParenthesizedType extends PrimaryType {
+    /**
+     * The type inside the parenthesise.
+     */
+    member: PrimaryType;
+  }
   
   // -- end types.
   
@@ -567,7 +578,7 @@ export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, in
     return listToString( <Defs.Base[]> objOrList);
   }
   
-  let obj = <Defs.Base> objOrList;
+  const obj = <Defs.Base> objOrList;
   let result: string;
   let dent: string = "";
   for (let i=level; i>0; i--) {
@@ -576,18 +587,18 @@ export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, in
   
   switch (obj.type) {
       case Defs.Type.WHITESPACE:
-        let ws = <Defs.WhiteSpace> obj;
+        const ws = <Defs.WhiteSpace> obj;
         return ws.value;
         break;
         
       case Defs.Type.MODULE:
-        let mod = <Defs.Module> obj;
+        const mod = <Defs.Module> obj;
         return dent + (mod.ambient ? "declare " : "") + (mod.export ? "export " : "") +
           "module " + (mod.external ? "'" + mod.name + "'" : mod.name) + " {\n" + listToString(mod.members, level+1) + "}\n";
         break;
         
       case Defs.Type.INTERFACE:
-        let inter = <Defs.Interface> obj;
+        const inter = <Defs.Interface> obj;
         result = dent + (inter.ambient ? "declare " : "") + (inter.export ? "export " : "");
         result += "interface " + inter.name;
           
@@ -606,12 +617,12 @@ export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, in
         break;
         
       case Defs.Type.FUNCTION:
-        let func = <Defs.Function> obj;
+        const func = <Defs.Function> obj;
         return dent + (func.ambient ? "declare " : "") + "function " + func.name + toString(func.signature) + ";";
         break;
         
       case Defs.Type.FUNCTION_TYPE:
-        let funcType = <Defs.FunctionType> obj;
+        const funcType = <Defs.FunctionType> obj;
 
         result = "";
         if (funcType.typeParameters !== null && funcType.typeParameters.length !==0) {
@@ -628,19 +639,19 @@ export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, in
         break;
         
       case Defs.Type.PARAMETER:
-        let param = <Defs.Parameter> obj;
+        const param = <Defs.Parameter> obj;
         return (param.rest ? "..." : "") + param.name +
                 (param.required === false && param.rest === false ? "?" :"") +
                 (param.parameterType !== null ? ": " + toStringFunctionSignature(param.parameterType) : "");
         break;
         
       case Defs.Type.OBJECT_TYPE:
-        let objType = <Defs.ObjectType> obj;
+        const objType = <Defs.ObjectType> obj;
         return "{" + listToString(objType.members, level+1, indent) + "}";
         break;
         
       case Defs.Type.OBJECT_TYPE_REF:
-        let objTypeRef = <Defs.ObjectTypeRef> obj;
+        const objTypeRef = <Defs.ObjectTypeRef> obj;
         result = objTypeRef.name;
         if (objTypeRef.typeArguments !== null && objTypeRef.typeArguments.length !== 0) {
           result += "<";
@@ -651,23 +662,23 @@ export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, in
         break;
         
       case Defs.Type.ARRAY_TYPE:
-        let arrayType = <Defs.ArrayType> obj;
+        const arrayType = <Defs.ArrayType> obj;
         return toString(arrayType.member) + "[]";
         break;
         
       case Defs.Type.TYPE_QUERY:
-        let typeQuery = <Defs.TypeQuery> obj;
+        const typeQuery = <Defs.TypeQuery> obj;
         return "typeof " + typeQuery.value;
         break;
         
       case Defs.Type.IMPORT_DECLARATION:
-        let dec = <Defs.ImportDeclaration> obj;
+        const dec = <Defs.ImportDeclaration> obj;
         return dent + (dec.export ? "export " : "") + "import " + dec.name + " = " +
           (dec.external ? "require('"+ dec.externalModule + "')" : dec.externalModule) + ";\n";
         break;
         
       case Defs.Type.METHOD:
-        let method = <Defs.Method> obj;
+        const method = <Defs.Method> obj;
         result = dent;
         result += method.accessibility !== null ? method.accessibility + " " : "";
         result += method.static ? "static " : "";
@@ -679,7 +690,7 @@ export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, in
         break;
         
       case Defs.Type.PROPERTY:
-        let prop = <Defs.Property> obj;
+        const prop = <Defs.Property> obj;
         result = dent;
         result += prop.accessibility !== null ? prop.accessibility + " " : "";
         result += prop.name;
@@ -690,43 +701,43 @@ export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, in
         break;
         
       case Defs.Type.TYPE_ALIAS:
-        let typeAlias = <Defs.TypeAlias> obj;
+        const typeAlias = <Defs.TypeAlias> obj;
         return dent + (typeAlias.ambient ? "declare " : "") + "type " + typeAlias.name + " = " + toStringFunctionSignature(typeAlias.entity) + ";";
         break;
         
       case Defs.Type.INDEX_METHOD:
-        let indexMethod = <Defs.IndexMethod> obj;
+        const indexMethod = <Defs.IndexMethod> obj;
         return dent + "[" + toString(indexMethod.index) + "]: " + toString(indexMethod.returnType) + ";";
         break;
         
       case Defs.Type.TYPE_PARAMETER:
-        let typeParameter = <Defs.TypeParameter> obj;
+        const typeParameter = <Defs.TypeParameter> obj;
         return typeParameter.name + ( typeParameter.extends !== null ? " extends " + toString(typeParameter.extends) : "");
         break;
         
       case Defs.Type.TUPLE_TYPE:
-        let tuple = <Defs.TupleType> obj;
+        const tuple = <Defs.TupleType> obj;
         return "[" + tuple.members.map( (t) => toString(t, level+1, indent) ).join(", ") + "]";
         break;
         
       case Defs.Type.UNION_TYPE:
-        let union = <Defs.UnionType> obj;
+        const union = <Defs.UnionType> obj;
         return union.members.map( (m) => toString(m) ).join("|");
         break;
           
       case Defs.Type.EXPORT_ASSIGNMENT:
-        let exportAssign = <Defs.ExportAssignment> obj;
+        const exportAssign = <Defs.ExportAssignment> obj;
         return dent + "export = " + exportAssign.name + ";\n";
         break;
         
       case Defs.Type.AMBIENT_VARIABLE:
-        let ambientVariable = <Defs.Variable> obj;
+        const ambientVariable = <Defs.Variable> obj;
         return dent + (ambientVariable.ambient ? "declare " : "") + " var " + ambientVariable.name +
           (ambientVariable.signature === null ? "" : ": " + toStringFunctionSignature(ambientVariable.signature)) +  ";\n";
         break;
         
       case Defs.Type.CLASS:
-        let classDec = <Defs.Class> obj;
+        const classDec = <Defs.Class> obj;
         result = dent;
         result += classDec.ambient ? "declare " : "";
         result += "class " + classDec.name;
@@ -746,7 +757,7 @@ export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, in
         break;
         
       case Defs.Type.ENUM:
-        let enumDecl = <Defs.Enum> obj;
+        const enumDecl = <Defs.Enum> obj;
         result = "";
         result += dent;
         if (enumDecl.ambient) {
@@ -769,12 +780,12 @@ export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, in
         break;
         
       case Defs.Type.SPECIALIZED_SIGNATURE:
-        let specicalizedSignature = <Defs.SpecializedSignature> obj;
+        const specicalizedSignature = <Defs.SpecializedSignature> obj;
         return '"' + specicalizedSignature.value + '"';
         break;
         
       case Defs.Type.CONSTRUCTOR_TYPE:
-        let constructorType = <Defs.ConstructorType> obj;
+        const constructorType = <Defs.ConstructorType> obj;
 
         result = "new";
         if (constructorType.signature.typeParameters !== null && constructorType.signature.typeParameters.length !==0) {
@@ -789,7 +800,11 @@ export function toString(objOrList: Defs.Base | Defs.Base[], level: number=0, in
         result += (constructorType.signature.returnType !== null ? (" => "+ toString(constructorType.signature.returnType)) : "");
         return result;
         break;
-
+        
+      case Defs.Type.PARENTHESIZED_TYPE:
+        const parenthesizedType = <Defs.ParenthesizedType> obj;
+        return '(' + toString(parenthesizedType.member) + ')';
+        break;
   }
   return "";
 }
