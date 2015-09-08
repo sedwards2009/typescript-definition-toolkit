@@ -38,7 +38,8 @@ const chromeFileName = "chrome_lib.es6.d.ts";
 const log = console.log.bind(console);
 
 const EXTRA_DELETE_VARIABLES: string[] = [
-  "CustomEvent" // Replaced in chrome_post_lib.d.ts.
+  "CustomEvent",   // Replaced in chrome_post_lib.d.ts.
+  "KeyboardEvent"  // Replaced in chrome_post_lib.d.ts.
 ];
 
 function main(): void {
